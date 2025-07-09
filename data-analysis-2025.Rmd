@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-#Authors: [INSERT NAMES HERE]
+#Authors: [Sydney Stanton]
 #Author Date: 
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
@@ -18,3 +18,38 @@ library(aod)
 #Example of importing our first data set from a CSV file to a data frame.
 df <- read.csv("./foo/bar.csv")
 ```
+
+```{r}
+#Womens basketball datasets
+Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
+Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
+Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
+Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
+```
+
+```{r}
+#womens soccer datasets
+Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
+Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
+Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
+Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
+```
+
+```{r}
+#womens lacrosse datasets
+Incident_L <- read.csv()
+Dynamo_L <- read.csv()
+Forcedecks_L <- read.csv()
+Performance_L <- read.csv()
+```
+
+```{r}
+#womens volleyball datasets 
+Incident_V <- read.csv()
+Dynamo_V <- read.csv()
+Forcedecks_L <- read.csv()
+Performance_V <- read.csv()
+```
+
+
+
