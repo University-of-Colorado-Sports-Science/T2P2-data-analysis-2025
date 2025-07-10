@@ -47,7 +47,6 @@ Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
 Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
 
-
 #Data Cleaning
 -create lower body injury column
 -no risk status watchlist to go off of , just look at actual incidents 

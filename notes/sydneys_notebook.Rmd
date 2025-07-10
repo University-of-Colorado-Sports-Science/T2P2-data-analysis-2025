@@ -154,7 +154,6 @@ incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 ```
 Across all the four different sports, no ACL injuries occurred.
 
-
 ## Exploratory Analysis 
 
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
