@@ -5,7 +5,7 @@ date: "2025-07-09"
 ---
 
 ```{r}
-#Authors: [Sydney Stanton]
+#Authors: [Sydney S]
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
