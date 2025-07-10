@@ -1,0 +1,92 @@
+---
+title: "Data Analysis Notebook"
+output: html_notebook
+---
+
+```{r}
+#Authors: [Carter Zborowski]
+#Author Date: 07/09/2025
+#Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
+
+#LAST UPDATED: 07/10/2025
+
+#Including helpful libraries
+library(tidyverse)
+library(readxl)
+library(aod)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+
+# Loading Datasets
+
+
+```{r}
+#Womens basketball datasets
+Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
+Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
+Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
+Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
+
+#womens soccer datasets
+Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
+Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
+Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
+Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
+
+#womens lacrosse datasets
+Incident_L <- read.csv("data-sets/Incident Report WLAX.csv")
+Dynamo_L <- read.csv("data-sets/VALD - Dynamo WLAX.csv")
+Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WLAX.csv")
+Performance_L <- read.csv("data-sets/VALD - Performance Test WLAx (1).csv")
+
+#womens volleyball datasets 
+Incident_V <- read.csv("data-sets/Incident Report WVB.csv")
+Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
+Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
+Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
+```
+
+
+# Data Cleaning
+
+
+## Womens Basketball
+
+### Incident Report
+
+```{r}
+#defines lower body injuries
+lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
+
+incident_b <- subset(Incident_B, select = c('anon_id', 'Date.of.Injury...Onset.of.symptoms', 'Body.Part', 'OSICS14.Code', 'Final.Diagnosis', 'Recurrence.of.Injury', 'Total.Time.Injured'))
+
+incident_b <- incident_b %>%
+  filter(Body.Part %in% lower_body) %>%
+  group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
+  mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y')) %>%
+  ungroup() %>%
+  group_by(across(everything())) %>%
+  summarise(.groups = 'drop') %>%
+  dplyr::select(-Date.of.Injury...Onset.of.symptoms)
+```
+
+### Dynamo Dataset
+
+```{r}
+#selects variables of interest
+dynamo_b <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+
+#converts the date to a date object and omits the NAs
+dynamo_b <- dynamo_b %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+
+There are three NA values in Knee.Ex.Max.Force..N..Asymmetry. Not sure how to calculate this value. 
+
+
