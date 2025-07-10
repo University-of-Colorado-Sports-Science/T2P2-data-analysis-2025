@@ -1,10 +1,11 @@
 ---
-title: "Data Analysis Notebook"
-output: html_notebook
+title: "sydneys_markdown"
+output: html_document
+date: "2025-07-09"
 ---
 
 ```{r}
-#Authors: [Sydney Stanton, Carter Zborowski]
+#Authors: [Sydney S]
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
@@ -20,10 +21,7 @@ library(ggplot2)
 library(lubridate)
 ```
 
-
-# Loading Datasets
-
-
+#Loading Datasets
 ```{r}
 #Womens basketball datasets
 Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
@@ -154,8 +152,20 @@ sum(incident_L$ACL)
 #HSI injury (overuse injury)
 incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 ```
-
 Across all the four different sports, no ACL injuries occurred.
+
+## Exploratory Analysis 
+
+#Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
+a. For example, one of our strength coaches uses 5 times body weight (kg) in Newtons for hamstring strength as a cutoff for injury risk. Is this supported by our data? 
+
+-looking for meaningful strength metrics to lower body injury risk
+-create thresholds fir these metrics by each position in each sport
+
+#Q2:What trends in strength do we see across the women’s team sports? 
+a. Soccer, lacrosse, volleyball, basketball. 
+
+#Visualizations for Presentation
 
 
 
