@@ -49,5 +49,110 @@ Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 
 
 #Data Cleaning
+-create lower body injury column
+-no risk status watchlist to go off of , just look at actual incidents 
+
+1. Incident Datasets
+```{r}
+#BASKETBALL Incident dataset
+Incident_B <- Incident_B %>%                    #189 -> 128 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Result.of.Sport.Participation=="Yes") #%>%
+#filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
+
+incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+        # 128 obs. + 19 vars.
+
+#rougly 4 months of data
+
+#Lower body injuries 
+lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
+incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
+sum(incident_B$LB.Injury)
+
+#ACL injury (most intense LB injury)
+incident_B$ACL <- ifelse(incident_B$OSICS14.Code %in% c("KL1"),1,0)
+sum(incident_B$ACL)
+#HSI injury (overuse injury)
+incident_B$HSI <- ifelse(incident_B$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+```
+
+LATER out of all Injurues to find LOWER BODY injuries  
+gerneral.mechanism==Non-contact|Chronic/Overuse
+```{r, warning = FALSE}
+#TO DO
+#edit position cloumn w/ multiple positions to only primary 
+#create time.injured by using (Start.of.Status, End.Date)
+```
+
+```{r}
+#SOCCER INCIDENT dataset
+Incident_S <- Incident_S %>%                    #361 -> 288 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Result.of.Sport.Participation=="Yes") #%>%
+#filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
+
+incident_S <- subset(Incident_S,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+        #288 obs. + 19 vars.
+
+#roughly 4 months of data / sept. 9 to jan. 15
+
+#Lower body injuriy Binary
+incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+sum(incident_S$LB.Injury)
+
+#ACL injury (most intense LB injury)
+incident_S$ACL <- ifelse(incident_S$OSICS14.Code %in% c("KL1"),1,0)
+sum(incident_S$ACL)
+#HSI injury (overuse injury)
+incident_S$HSI <- ifelse(incident_S$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+```
+
+```{r}
+#VOLLEYBALL incident dataset
+Incident_V <- Incident_V %>%                    #220 -> 135 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Result.of.Sport.Participation=="Yes") #%>%
+#filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
+
+incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+        #135 +23 vars.
+
+#1/16/24-9/8/24 (9 MONTHS)
+
+#Lower body injuriy Binary
+incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+sum(incident_v$LB.Injury)
+
+#ACL injury (most intense LB injury)
+incident_V$ACL <- ifelse(incident_V$OSICS14.Code %in% c("KL1"),1,0)
+sum(incident_v$ACL)
+#HSI injury (overuse injury)
+incident_V$HSI <- ifelse(incident_V$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+```
+
+```{r}
+#LACROSSE incident dataset 
+Incident_L <- Incident_L %>%                    #139 -> 86 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Result.of.Sport.Participation=="Yes") #%>%
+#filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
+
+incident_L <- subset(Incident_L,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+
+#9/9/24-1/13/25 (4.5 MONTHS)
+
+#Lower body injuiy Binary
+incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+sum(incident_l$LB.Injury)
+
+#ACL injury (most intense LB injury)
+incident_L$ACL <- ifelse(incident_L$OSICS14.Code %in% c("KL1"),1,0)
+sum(incident_L$ACL)
+#HSI injury (overuse injury)
+incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+```
+
+Across all the four different sports, no ACL injuries occurred.
 
 
