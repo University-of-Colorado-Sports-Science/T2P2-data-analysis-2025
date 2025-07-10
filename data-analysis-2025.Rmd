@@ -20,7 +20,10 @@ library(ggplot2)
 library(lubridate)
 ```
 
-#Loading Datasets
+
+# Loading Datasets
+
+
 ```{r}
 #Womens basketball datasets
 Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
@@ -153,5 +156,6 @@ incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 ```
 
 Across all the four different sports, no ACL injuries occurred.
+
 
 
