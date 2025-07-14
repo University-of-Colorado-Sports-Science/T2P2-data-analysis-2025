@@ -19,6 +19,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
+library(readr)
 ```
 
 #Loading Datasets
@@ -48,6 +49,15 @@ Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
 Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
 
+```{r}
+#copied as paths other way not working rn
+#INCIDENT DATASETS
+Incident_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WBB.csv")
+Incident_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WSOC.csv")
+Incident_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WLAX.csv")
+Incident_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WVB.csv")
+```
+
 #Data Cleaning
 -create lower body injury column
 -no risk status watchlist to go off of , just look at actual incidents 
@@ -60,7 +70,7 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))  #add "Specific.Mechanism","Injury.Position",
         # 128 obs. + 19 vars.
 
 #rougly 4 months of data
@@ -75,14 +85,23 @@ incident_B$ACL <- ifelse(incident_B$OSICS14.Code %in% c("KL1","KLA"),1,0)
 sum(incident_B$ACL)
 #HSI injury (overuse injury)
 incident_B$HSI <- ifelse(incident_B$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+sum(incident_B$HSI)
 ```
+In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
 
-LATER out of all Injurues to find LOWER BODY injuries  
-gerneral.mechanism==Non-contact|Chronic/Overuse
-```{r, warning = FALSE}
-#TO DO
-#edit position cloumn w/ multiple positions to only primary 
-#create time.injured by using (Start.of.Status, End.Date)
+```{r}
+#CARTERS TO INCORPORATE
+#incident_b <- subset(Incident_B, select = c('anon_id', 'Date.of.Injury...Onset.of.symptoms', 'Body.Part', 'OSICS14.Code', 'Final.Diagnosis', 'Recurrence.of.Injury', 'Total.Time.Injured'))
+
+incident_b <- incident_b %>%
+  filter(Body.Part %in% lower_body) %>%
+  group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
+  mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y')) %>%
+  ungroup() %>%
+  group_by(across(everything())) %>%
+  summarise(.groups = 'drop') %>%
+  dplyr::select(-Date.of.Injury...Onset.of.symptoms)
 ```
 
 ```{r}
@@ -92,7 +111,7 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_S <- subset(Incident_S,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+incident_S <- subset(Incident_S,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
         #288 obs. + 19 vars.
 
 #roughly 4 months of data / sept. 9 to jan. 15
@@ -106,7 +125,9 @@ incident_S$ACL <- ifelse(incident_S$OSICS14.Code %in% c("KL1","KLA"),1,0)
 sum(incident_S$ACL)
 #HSI injury (overuse injury)
 incident_S$HSI <- ifelse(incident_S$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+sum(incident_S$HSI)
 ```
+In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
 
 ```{r}
 #VOLLEYBALL incident dataset
@@ -115,21 +136,24 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
         #135 +23 vars.
 
 #1/16/24-9/8/24 (9 MONTHS)
 
 #Lower body injuriy Binary
 incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
-sum(incident_v$LB.Injury)
+sum(incident_V$LB.Injury)
 
 #ACL injury (most intense LB injury)
 incident_V$ACL <- ifelse(incident_V$OSICS14.Code %in% c("KL1","KLA"),1,0)
-sum(incident_v$ACL)
+sum(incident_V$ACL)
 #HSI injury (overuse injury)
 incident_V$HSI <- ifelse(incident_V$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+sum(incident_V$HSI)
 ```
+In womens' volleyball 60 lower body injuries occured, 10 of them beig ACL injuries, 4 of them being HSI injuries. 
+
 
 ```{r}
 #LACROSSE incident dataset 
@@ -138,21 +162,89 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_L <- subset(Incident_L,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+incident_L <- subset(Incident_L,select=c("anon_id","Date", "Position", "Incident.Type", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
 
 #9/9/24-1/13/25 (4.5 MONTHS)
 
 #Lower body injuiy Binary
 incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
-sum(incident_l$LB.Injury)
+sum(incident_L$LB.Injury)
 
 #ACL injury (most intense LB injury)
 incident_L$ACL <- ifelse(incident_L$OSICS14.Code %in% c("KL1","KLA"),1,0)
 sum(incident_L$ACL)
 #HSI injury (overuse injury)
 incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+sum(incident_L$HSI)
 ```
-Across all the four different sports, no ACL injuries occurred.
+In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
+
+
+
+
+```{r}
+#selects variables of interest
+dynamo_b <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+
+#converts the date to a date object and omits the NAs
+dynamo_b <- dynamo_b %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+
+There are three NA values in Knee.Ex.Max.Force..N..Asymmetry. Not sure how to calculate this value. 
+
+2. VALD- Dynamo datasets
+
+
+3. VALD- Forcedecks datasets
+```{r}
+Forcedecks_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WBB.csv")
+Forcedecks_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WSOC.csv")
+Forcedecks_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WLAX.csv")
+Forcedecks_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WVB.csv")
+```
+
+```{r}
+#forcedecks (VALD) bball
+#BASKETBALL Incident dataset
+Forcedecks_B <- Forcedecks_B %>%                    #189 -> 128 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Result.of.Sport.Participation=="Yes") #%>%
+#filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
+
+incident_B <- subset(Forcedecks_B,select=c("anon_id","Date", ))
+        # 128 obs. + 19 vars.
+
+#rougly 4 months of data
+```
+
+```{r}
+#forcedecks (VALD) soccer
+
+```
+
+```{r}
+#forcedecks (VALD) lacrosse 
+
+```
+
+```{r}
+#forcedecks (VALD) volleyball
+
+```
+
+
+4. VALD- Performance Test datasets
+```{r}
+Performance_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WBB.csv")
+Performance_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WSOC.csv")
+Performance_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WLAx (1).csv")
+Performance_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WVB.csv")
+```
+
+
+
 
 ## Exploratory Analysis 
 
@@ -164,20 +256,6 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 
 #Q2:What trends in strength do we see across the women’s team sports? 
 a. Soccer, lacrosse, volleyball, basketball. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
