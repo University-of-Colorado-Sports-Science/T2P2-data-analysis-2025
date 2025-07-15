@@ -50,7 +50,7 @@ Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
 
 ```{r}
-#copied as paths other way not working rn
+#copied as paths above were not working rn
 #INCIDENT DATASETS
 Incident_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WBB.csv")
 Incident_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WSOC.csv")
@@ -144,7 +144,6 @@ filter(Result.of.Sport.Participation=="Yes") #%>%
 incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season", "Start.of.Status", "End.Date"))
         #135 +23 vars.
 
-
 #1/16/24-9/8/24 (9 MONTHS)
 
 #Lower body injuriy Binary
@@ -188,6 +187,9 @@ incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_L$HSI)
 ```
 In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
+
+
+
 
 2. VALD- Dynamo datasets
 -we need to know the calculations for the asymmetry measures because they seem inconsistent.
@@ -283,10 +285,11 @@ dynamo_V <- dynamo_V %>%
 Only has 4 observations from one player but not missing any data.
 
 
-3. VALD- Forcedecks datasets
--filter out more, only cut down to half. Need to determine what metrics are most important first.
 
+
+3. VALD- Forcedecks datasets
 ```{r}
+#import datasets
 Forcedecks_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WBB.csv")
 Forcedecks_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WSOC.csv")
 Forcedecks_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks WLAX.csv")
@@ -294,137 +297,205 @@ Forcedecks_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks 
 ```
 
 ```{r}
-# Forcedecks (VALD) basketball data 
+#Forcedecks (VALD) basketball data 
 #selects variables of interest
-forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
-"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
-"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
-"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral","Relative.Eccentric.Power.Bilateral", "Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.","Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.","Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.", "Max.CMJ.Jump.Height..cm.","Max.CMJ.RSI.Modified..m.s.", "Max.CMJ.Concentric.RPD..N.s.", "Max.CMJ.Peak.Power..W.", "Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
 ))            #2751 obs & 36 vars.
 ```
 
 ```{r}
 #convert empty vectors to NA
-forcedecks_B[forcedecks_B==""] <- NA
+forcedecks_B[forcedecks_B==""] <- NA    #colSums(is.na(forcedecks_B)) look at NAs in columns
 
-#colSums(is.na(forcedecks_B)) look at NAs in columns 
+#set all needed variables to numeric
+forcedecks_B$Countermovement.Depth..cm. <- as.numeric(forcedecks_B$Countermovement.Depth..cm.)
+forcedecks_B$Peak.Power...BM..W.kg. <- as.numeric(forcedecks_B$Peak.Power...BM..W.kg.)
+
+#combining values from different observations into one
+forcedecks_b <- forcedecks_B %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )                   #1343 obs & 32 vars
+
+#fix NaN values 
 ```
-
-
-
-
-
-
-
-
-
-
 
 ```{r}
 #forcedecks (VALD) soccer data
-forcedecks_S <- Forcedecks_S[ , -c(
-  1, 5, 6, 7, 8, 10, 12, 13, 16, 17, 18, 20, 22, 23, 25, 33, 34, 35, 36, 37,
-  39, 40, 45, 46, 47, 48, 50, 51, 54, 55, 59, 60, 68, 69, 75, 76, 81, 82, 84,
-  85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 101, 110, 111, 112, 113,
-  114, 117, 118, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-  135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 150,
-  151, 154, 155, 158, 159, 162, 163, 164, 165, 166, 167, 168, 172, 173, 176,
-  177, 178, 179, 182, 184, 185, 186, 187, 195, 196, 199, 200, 203, 204, 207,
-  208, 211, 212, 215, 216, 219, 223, 224, 226, 227, 228, 229, 231, 232, 234,
-  236, 237, 239, 240, 242, 243, 245, 246, 247, 248, 249, 250, 251, 252, 253,
-  254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268,
-  269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
-  284, 285, 286, 287, 289, 290, 292, 293, 295, 296, 299, 300, 301, 303, 304,
-  305, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320,
-  321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334:342,
-  344, 345, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359,
-  360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374,
-  375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389,
-  390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404,
-  405, 406, 407, 410, 411, 412, 415, 416, 418, 419, 422, 423, 428, 429, 432,
-  433, 436, 437, 440, 441, 444, 445, 448, 449, 451, 452, 453, 454, 456, 457,
-  462, 463, 464, 466, 467, 473, 474, 477, 478, 481, 482, 484, 485, 489, 490,
-  495, 496, 500, 501, 502, 503, 504, 505, 506, 510, 513, 515, 516, 517, 518,
-  519, 520, 521, 522, 546, 547, 548, 549, 550, 551, 567, 585, 590, 591, 595,
-  596, 601, 604, 605, 606, 611, 618, 619, 620, 621, 622, 623, 639, 640, 641,
-  642, 643, 644, 645, 646, 647, 648, 650, 651, 652, 653, 654, 655, 656, 657,
-  658, 659, 660, 661, 662, 663, 664, 665, 670, 671, 672, 673, 674, 675, 676,
-  677, 678, 693, 696, 697, 698, 701, 705, 707, 708, 709, 710, 724, 727, 728,
-  743, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-  769, 770, 771, 772, 773
-)]
+#selects variables of interest
+forcedecks_S <- subset(Forcedecks_S, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #3443 obs & 36 vars 
+
+forcedecks_S[forcedecks_S==""] <- NA
+
+#combining values from different observations into one
+forcedecks_s <- forcedecks_S %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 1077 obs & 32 vars
 ```
 
 ```{r}
 #forcedecks (VALD) lacrosse data
-forcedecks_L <- Forcedecks_L[ , -c(
-  1, 5, 6, 7, 8, 10, 12, 13, 16, 17, 18, 20, 22, 23, 25, 33, 34, 35, 36, 37,
-  39, 40, 45, 46, 47, 48, 50, 51, 54, 55, 59, 60, 68, 69, 75, 76, 81, 82, 84,
-  85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 101, 110, 111, 112, 113,
-  114, 117, 118, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-  135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 150,
-  151, 154, 155, 158, 159, 162, 163, 164, 165, 166, 167, 168, 172, 173, 176,
-  177, 178, 179, 182, 184, 185, 186, 187, 195, 196, 199, 200, 203, 204, 207,
-  208, 211, 212, 215, 216, 219, 223, 224, 226, 227, 228, 229, 231, 232, 234,
-  236, 237, 239, 240, 242, 243, 245, 246, 247, 248, 249, 250, 251, 252, 253,
-  254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268,
-  269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
-  284, 285, 286, 287, 289, 290, 292, 293, 295, 296, 299, 300, 301, 303, 304,
-  305, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320,
-  321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334:342,
-  344, 345, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359,
-  360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374,
-  375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389,
-  390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404,
-  405, 406, 407, 410, 411, 412, 415, 416, 418, 419, 422, 423, 428, 429, 432,
-  433, 436, 437, 440, 441, 444, 445, 448, 449, 451, 452, 453, 454, 456, 457,
-  462, 463, 464, 466, 467, 473, 474, 477, 478, 481, 482, 484, 485, 489, 490,
-  495, 496, 500, 501, 502, 503, 504, 505, 506, 510, 513, 515, 516, 517, 518,
-  519, 520, 521, 522, 546, 547, 548, 549, 550, 551, 567, 585, 590, 591, 595,
-  596, 601, 604, 605, 606, 611, 618, 619, 620, 621, 622, 623, 639, 640, 641,
-  642, 643, 644, 645, 646, 647, 648, 650, 651, 652, 653, 654, 655, 656, 657,
-  658, 659, 660, 661, 662, 663, 664, 665, 670, 671, 672, 673, 674, 675, 676,
-  677, 678, 693, 696, 697, 698, 701, 705, 707, 708, 709, 710, 724, 727, 728,
-  743, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-  769, 770, 771, 772, 773
-)]
+#selects variables of interest
+forcedecks_L <- subset(Forcedecks_L, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #1939 obs & 36 vars 
+
+forcedecks_L[forcedecks_L==""] <- NA
+
+#combining values from different observations into one
+forcedecks_l <- forcedecks_L %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 717 obs & 32 vars
 ```
 
 ```{r}
 #forcedecks (VALD) volleyball data
-forcedecks_V <- Forcedecks_V[ , -c(
-  1, 5, 6, 7, 8, 10, 12, 13, 16, 17, 18, 20, 22, 23, 25, 33, 34, 35, 36, 37,
-  39, 40, 45, 46, 47, 48, 50, 51, 54, 55, 59, 60, 68, 69, 75, 76, 81, 82, 84,
-  85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 101, 110, 111, 112, 113,
-  114, 117, 118, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-  135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 150,
-  151, 154, 155, 158, 159, 162, 163, 164, 165, 166, 167, 168, 172, 173, 176,
-  177, 178, 179, 182, 184, 185, 186, 187, 195, 196, 199, 200, 203, 204, 207,
-  208, 211, 212, 215, 216, 219, 223, 224, 226, 227, 228, 229, 231, 232, 234,
-  236, 237, 239, 240, 242, 243, 245, 246, 247, 248, 249, 250, 251, 252, 253,
-  254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268,
-  269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
-  284, 285, 286, 287, 289, 290, 292, 293, 295, 296, 299, 300, 301, 303, 304,
-  305, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320,
-  321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334:342,
-  344, 345, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359,
-  360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374,
-  375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389,
-  390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404,
-  405, 406, 407, 410, 411, 412, 415, 416, 418, 419, 422, 423, 428, 429, 432,
-  433, 436, 437, 440, 441, 444, 445, 448, 449, 451, 452, 453, 454, 456, 457,
-  462, 463, 464, 466, 467, 473, 474, 477, 478, 481, 482, 484, 485, 489, 490,
-  495, 496, 500, 501, 502, 503, 504, 505, 506, 510, 513, 515, 516, 517, 518,
-  519, 520, 521, 522, 546, 547, 548, 549, 550, 551, 567, 585, 590, 591, 595,
-  596, 601, 604, 605, 606, 611, 618, 619, 620, 621, 622, 623, 639, 640, 641,
-  642, 643, 644, 645, 646, 647, 648, 650, 651, 652, 653, 654, 655, 656, 657,
-  658, 659, 660, 661, 662, 663, 664, 665, 670, 671, 672, 673, 674, 675, 676,
-  677, 678, 693, 696, 697, 698, 701, 705, 707, 708, 709, 710, 724, 727, 728,
-  743, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-  769, 770, 771, 772, 773
-)]
-```
+forcedecks_V <- subset(Forcedecks_V, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #5332 obs & 36 vars 
 
+forcedecks_V[forcedecks_V==""] <- NA
+
+#combining values from different observations into one
+forcedecks_v <- forcedecks_V %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 1416 obs & 32 vars
+```
 
 4. VALD- Performance Test datasets
 ```{r}
@@ -434,8 +505,120 @@ Performance_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performanc
 Performance_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WVB.csv")
 ```
 
+Of all performance datasets, only basketball and volleyball have positional norm information but are also missing a lot of positional information which makes this column sparse. None of the datasets contain rotational data or razor data. Contain small amounts of iso prone data.
+```{r}
+#Basketball preformance data 
+#selects variables of interest, nordic and hip data, and cleans up position variable
+performance_B <- subset(Performance_B, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Position = case_when(
+    Sport.Position == '' ~ 'None',
+    Sport.Position == '|Guard' ~ 'Guard',
+    str_detect(Sport.Position, "Primary:") ~ 'Forward',
+    TRUE ~ Sport.Position
+  )) %>%
+  select(-Sport.Position)
+
+#makes the date column a 'date' object for later and omits NA values for nordic dataset
+performance_B_nordic <- performance_B %>%
+  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+
+#makes the date column a 'date' object for later and omits NA values for hip dataset
+performance_B_hip <- performance_B %>%
+  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+Need to either get more data on positions of players or get rid of percent difference from norm since it has a lot of NAs. Could consider athlete bodyweight as well to put strength relatively but also has missing data and has negative values? Also missing a decent amount of z-score observations. 147 observations with percent difference norm and z-scores. 550 with only z-scores. 592 with neither percent difference norm or z-scores. If we include athlete bodyweight and exclude percent difference norm and z-scores there are 521 observations. 
+
+Hip dataset contains 109 observations including the bodyweight variable, 129 otherwise. 
+
+```{r}
+#Soccer preformance data
+#selects variables of interest, nordic and hip data, and cleans up position variable
+performance_S <- subset(Performance_S, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Position = case_when(
+    Sport.Position == '' ~ 'None',
+    TRUE ~ Sport.Position
+  )) %>%
+  select(-Sport.Position)
+
+#makes the date column a 'date' object for later and omits NA values for nordic dataset
+performance_S_nordic <- performance_S %>%
+  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+
+#makes the date column a 'date' object for later and omits NA values for hip dataset
+performance_S_hip <- performance_S %>%
+  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+Does not contain any information about positional norms so there are no percent differences from norm. 421 observations with z-scores. 483 observations without z-scores. There are 400 observations if bodyweight is included.  
+
+Hip dataset contains only 39 observations with body weight included and without it included. 
+
+```{r}
+#Lacrosse preformance data
+#selects variables of interest, nordic and hip data, and cleans up position variable
+performance_L <- subset(Performance_L, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Position = case_when(
+    Sport.Position == '' ~ 'None',
+    TRUE ~ Sport.Position
+  )) %>%
+  select(-Sport.Position)
+
+#makes the date column a 'date' object for later and omits NA values for nordic dataset
+performance_L_nordic <- performance_L %>%
+  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+
+#makes the date column a 'date' object for later and omits NA values for hip dataset
+performance_L_hip <- performance_L %>%
+  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+
+Also does not contain any information about positional norms so there are no percent differences from norm. 855 observations with z-scores. 929 observations without z-scores. 810 observations if bodyweight is included.  
+
+Hip dataset contains 100 observations with bodyweight included and excluded. 
+
+```{r}
+#4Volleyball preformance data
+#selects variables of interest, nordic and hip data
+performance_V <- subset(Performance_V, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Position = case_when(
+    Sport.Position == '' ~ 'None',
+    TRUE ~ Sport.Position
+  )) %>%
+  select(-Sport.Position)
+
+#makes the date column a 'date' object for later and omits NA values for nordic dataset
+performance_V_nordic <- performance_V %>%
+  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+
+#makes the date column a 'date' object for later and omits NA values for hip dataset
+performance_V_hip <- performance_V %>%
+  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  na.omit()
+```
+
+There are a lot of observations with the player playing multiple positions, need to figure out how to filter down when analyzing data by positions. 
+
+Does have positional norm information but a lot of missing values. Only 33 observations with percent difference norm and z-scores. 356 observations with only z-scores. 393 observations without either percent difference norm or z-scores. 325 observations if bodyweight is included.
+
+Hip data contains 180 observations with bodyweight included, 220 otherwise.
+
 
 ## Exploratory Analysis 
+
 
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
 a. For example, one of our strength coaches uses 5 times body weight (kg) in Newtons for hamstring strength as a cutoff for injury risk. Is this supported by our data? 
@@ -445,6 +628,5 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 
 #Q2:What trends in strength do we see across the women’s team sports? 
 a. Soccer, lacrosse, volleyball, basketball. 
-
 
 
