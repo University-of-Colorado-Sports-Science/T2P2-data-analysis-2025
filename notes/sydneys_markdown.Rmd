@@ -69,10 +69,8 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status", "Season", "Start.of.Status", "End.Date"))  #add,"Injured.Position",
+incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date"))  #add,"Injured.Position",
         # 128 obs. + 26 vars.
-
-#12/5/23-1/2/25 DATE RANGE (2 years)
 
 #Lower body injuries 
 lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
@@ -85,6 +83,18 @@ sum(incident_B$ACL)
 #HSI injury (overuse injury)
 incident_B$HSI <- ifelse(incident_B$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_B$HSI)
+
+#12/5/23-1/2/25 DATE RANGE (2 years)
+
+#converting all dates
+incident_b <- incident_B %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
+       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
+       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'))
+
+#create a length of status variable (Out, limited,as tolerated, full go)
+incident_b$Length.of.Status <- difftime(incident_b$End.Date, incident_b$Start.of.Status,units=c("days"))
 ```
 In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
 ```{r}
@@ -112,10 +122,8 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_S <- subset(Incident_S,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
+incident_S <- subset(Incident_S,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date"))
         #288 obs. + 27 vars.
-
-#5/8/23- 1/15/25 (year and a half ish)
 
 #Lower body injuriy Binary
 incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -127,6 +135,18 @@ sum(incident_S$ACL)
 #HSI injury (overuse injury)
 incident_S$HSI <- ifelse(incident_S$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_S$HSI)
+
+#5/8/23- 1/15/25 (year and a half ish)
+
+#converting all dates
+incident_s <- incident_S %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
+       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
+       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'))
+
+#create a length of status variable (Out, limited,as tolerated, full go)
+incident_s$Length.of.Status <- difftime(incident_s$End.Date, incident_s$Start.of.Status,units=c("days"))
 ```
 In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
 ```{r}
@@ -141,10 +161,8 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season", "Start.of.Status", "End.Date"))
+incident_V <- subset(Incident_V,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date"))
         #135 +23 vars.
-
-#1/16/24-9/8/24 (9 MONTHS)
 
 #Lower body injuriy Binary
 incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -156,6 +174,18 @@ sum(incident_V$ACL)
 #HSI injury (overuse injury)
 incident_V$HSI <- ifelse(incident_V$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_V$HSI)
+
+#1/16/24-9/8/24 (9 MONTHS)
+
+#converting all dates
+incident_v <- incident_V %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
+       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
+       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'))
+
+#create a length of status variable (Out, limited,as tolerated, full go)
+incident_v$Length.of.Status <- difftime(incident_v$End.Date, incident_v$Start.of.Status,units=c("days"))
 ```
 In womens' volleyball 60 lower body injuries occured, 10 of them beig ACL injuries, 4 of them being HSI injuries. 
 ```{r}
@@ -171,9 +201,7 @@ filter(Incident.Type=="Injury") %>%
 filter(Result.of.Sport.Participation=="Yes") #%>%
 #filter(General.mechanism=="Non-contact"|"Chronic/Overuse")
 
-incident_L <- subset(Incident_L,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season", "Start.of.Status", "End.Date"))
-
-#4/12/23-4/18/25 (2 years)
+incident_L <- subset(Incident_L,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date"))
 
 #Lower body injuiy Binary
 incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -185,6 +213,18 @@ sum(incident_L$ACL)
 #HSI injury (overuse injury)
 incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_L$HSI)
+
+#4/12/23-4/18/25 (2 years)
+
+#converting all dates
+incident_l <- incident_L %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
+       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
+       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'))
+
+#create a length of status variable (Out, limited,as tolerated, full go)
+incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
 ```
 In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
 
@@ -301,9 +341,7 @@ Forcedecks_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks 
 #selects variables of interest
 forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral","Relative.Eccentric.Power.Bilateral", "Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.","Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.","Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.", "Max.CMJ.Jump.Height..cm.","Max.CMJ.RSI.Modified..m.s.", "Max.CMJ.Concentric.RPD..N.s.", "Max.CMJ.Peak.Power..W.", "Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
 ))            #2751 obs & 36 vars.
-```
 
-```{r}
 #convert empty vectors to NA
 forcedecks_B[forcedecks_B==""] <- NA    #colSums(is.na(forcedecks_B)) look at NAs in columns
 
@@ -349,6 +387,11 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
               )                   #1343 obs & 32 vars
 
 #fix NaN values 
+```
+
+```{r}
+forcedecks_bb <- forcedecks_b %>%
+  na.omit()   #463 obs & 32 vars
 ```
 
 ```{r}
@@ -398,6 +441,9 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
             CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
             #Eccentric.Asymmetry=mode function needs to be created
               )               # 1077 obs & 32 vars
+
+forcedecks_soc <- forcedecks_s %>%
+  na.omit()   #621 obs & 32 vars
 ```
 
 ```{r}
@@ -447,6 +493,9 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
             CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
             #Eccentric.Asymmetry=mode function needs to be created
               )               # 717 obs & 32 vars
+
+forcedecks_lax <- forcedecks_l %>%
+  na.omit()   #390s & 32 vars
 ```
 
 ```{r}
@@ -495,7 +544,11 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
             CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
             #Eccentric.Asymmetry=mode function needs to be created
               )               # 1416 obs & 32 vars
+
+forcedecks_vb <- forcedecks_v %>%
+  na.omit()   #508 obs & 32 vars
 ```
+
 
 4. VALD- Performance Test datasets
 ```{r}
