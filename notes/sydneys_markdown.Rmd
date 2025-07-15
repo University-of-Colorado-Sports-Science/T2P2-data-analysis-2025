@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/14/2025
+#LAST UPDATED: 07/15/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -59,7 +59,7 @@ Incident_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WVB.
 ```
 
 #Data Cleaning
--no risk status watchlist to go off of , just look at actual incidents 
+-no risk status watchlist to compare to, just look at actual incidents 
 
 1. Incident Datasets
 ```{r}
@@ -72,7 +72,7 @@ filter(Result.of.Sport.Participation=="Yes") #%>%
 incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident.Type", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status", "Season", "Start.of.Status", "End.Date"))  #add,"Injured.Position",
         # 128 obs. + 26 vars.
 
-#12/5/23-1/2/25 DATE RANGE
+#12/5/23-1/2/25 DATE RANGE (2 years)
 
 #Lower body injuries 
 lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
@@ -87,6 +87,10 @@ incident_B$HSI <- ifelse(incident_B$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_B$HSI)
 ```
 In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
+```{r}
+#bball incidents plots
+#position by count if lower body injury 
+```
 
 ```{r}
 #CARTERS TO INCORPORATE LATER
@@ -125,6 +129,10 @@ incident_S$HSI <- ifelse(incident_S$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_S$HSI)
 ```
 In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
+```{r}
+#soccer incident plot
+#position by count of lower body injuries 
+```
 
 ```{r}
 #VOLLEYBALL incident dataset
@@ -151,6 +159,11 @@ incident_V$HSI <- ifelse(incident_V$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
 sum(incident_V$HSI)
 ```
 In womens' volleyball 60 lower body injuries occured, 10 of them beig ACL injuries, 4 of them being HSI injuries. 
+```{r}
+#vball incident plot
+#positions by count of lower body injuries 
+```
+
 
 ```{r}
 #LACROSSE incident dataset 
@@ -177,16 +190,98 @@ sum(incident_L$HSI)
 In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
 
 2. VALD- Dynamo datasets
+-we need to know the calculations for the asymmetry measures because they seem inconsistent.
+```{r}
+#load data
+Dynamo_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Dynamo WBB.csv")
+Dynamo_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Dynamo WSOC.csv")
+Dynamo_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Dynamo WVB.csv")
+Dynamo_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Dynamo WLAX.csv")
+```
+
+**1. Basketball**
 ```{r}
 #selects variables of interest
-dynamo_b <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+dynamo_B <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
 
 #converts the date to a date object and omits the NAs
-dynamo_b <- dynamo_b %>%
-  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+dynamo_B <- dynamo_B %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Knee.Ex.Max.Force..N..Asymmetry = case_when(
+           Knee.Ex.Left.Side.Max.Force..N. > Knee.Ex.Right.Side.Max.Force..N. ~ round(100 * (1 - (Knee.Ex.Right.Side.Max.Force..N. / Knee.Ex.Left.Side.Max.Force..N.)), 1),
+           TRUE ~ Knee.Ex.Max.Force..N..Asymmetry
+         )) %>%
   na.omit()
 ```
-There are three NA values in Knee.Ex.Max.Force..N..Asymmetry. Not sure how to calculate this value. 
+19 total observations, 3 with NA values in Knee.Ex.Max.Force..N..Asymmetry.
+
+**2. Soccer**
+```{r, warning = FALSE}
+#selects variables of interest
+dynamo_S <- subset(Dynamo_S, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+
+#converts the date to a date object and puts values from different observations together into one observation
+dynamo_S <- dynamo_S %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Knee.Ex.Right.Side.Max.Force..N. = sum(Knee.Ex.Right.Side.Max.Force..N., na.rm = TRUE), 
+            Knee.Ex.Left.Side.Max.Force..N. = sum(Knee.Ex.Left.Side.Max.Force..N., na.rm = TRUE), 
+            Knee.Ex.Max.Force..N..Asymmetry = sum(Knee.Ex.Max.Force..N..Asymmetry), 
+            Knee.Ex.Right.Side.Avg.Force..N. = sum(Knee.Ex.Right.Side.Avg.Force..N., na.rm = TRUE), 
+            Knee.Ex.Left.Side.Avg.Force..N. = sum(Knee.Ex.Left.Side.Avg.Force..N., na.rm = TRUE), 
+            Knee.Ex.Avg.Force.Asymmetry = sum(Knee.Ex.Avg.Force.Asymmetry), 
+            Knee.Ex.Right.Side.Max.Impulse..Ns. = sum(Knee.Ex.Right.Side.Max.Impulse..Ns., na.rm = TRUE), 
+            Knee.Ex.Left.Side.Max.Impulse..Ns. = sum(Knee.Ex.Left.Side.Max.Impulse..Ns., na.rm = TRUE), 
+            Knee.Ex.Max.Impulse.Asymmetry = sum(Knee.Ex.Max.Impulse.Asymmetry), 
+            Knee.Ex.Right.Side.Avg.Impulse..Ns. = sum(Knee.Ex.Right.Side.Avg.Impulse..Ns., na.rm = TRUE), 
+            Knee.Ex.Left.Side.Avg.Impulse..Ns. = sum(Knee.Ex.Left.Side.Avg.Impulse..Ns., na.rm = TRUE), 
+            Knee.Ex.Avg.Impulse.Asymmetry = sum(Knee.Ex.Avg.Impulse.Asymmetry),
+            Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns. = sum(Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns., na.rm = TRUE),
+            Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns. = sum(Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns., na.rm = TRUE),
+            Knee.Ex.Max.Rate.of.Force.Development.Asymmetry = sum(Knee.Ex.Max.Rate.of.Force.Development.Asymmetry),
+            Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns. = sum(Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns., na.rm = TRUE),
+            Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns. = sum(Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns., na.rm = TRUE),
+            Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry = sum(Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry), .groups = "drop") %>%
+  mutate(Knee.Ex.Max.Force..N..Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Max.Force..N. / Knee.Ex.Right.Side.Max.Force..N.)), 1),
+         Knee.Ex.Avg.Force.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Avg.Force..N. / Knee.Ex.Right.Side.Avg.Force..N.)), 1),
+         Knee.Ex.Max.Impulse.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Max.Impulse..Ns. / Knee.Ex.Right.Side.Max.Impulse..Ns.)), 1),
+         Knee.Ex.Avg.Impulse.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Avg.Impulse..Ns. / Knee.Ex.Right.Side.Avg.Impulse..Ns.)), 1),
+         Knee.Ex.Max.Rate.of.Force.Development.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns. / Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.)), 1),
+         Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns. / Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.)), 1))
+```
+Only 1 observation, none of the asymmetry statistics are summarized. 
+
+**3. Lacrosse**
+```{r}
+#selects variables of interest
+dynamo_L <- subset(Dynamo_L, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+
+#converts the date to a date object and omits the NAs
+dynamo_L <- dynamo_L %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Knee.Ex.Max.Force..N..Asymmetry = case_when(
+           Knee.Ex.Left.Side.Max.Force..N. > Knee.Ex.Right.Side.Max.Force..N. ~ round(100 * (1 - (Knee.Ex.Right.Side.Max.Force..N. / Knee.Ex.Left.Side.Max.Force..N.)), 1),
+           TRUE ~ Knee.Ex.Max.Force..N..Asymmetry
+         )) %>%
+  na.omit()
+```
+
+**4. Volleyball**
+```{r}
+#selects variables of interest
+dynamo_V <- subset(Dynamo_V, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
+
+#converts the date to a date object and omits the NAs
+dynamo_V <- dynamo_V %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Knee.Ex.Max.Force..N..Asymmetry = case_when(
+           Knee.Ex.Left.Side.Max.Force..N. > Knee.Ex.Right.Side.Max.Force..N. ~ round(100 * (1 - (Knee.Ex.Right.Side.Max.Force..N. / Knee.Ex.Left.Side.Max.Force..N.)), 1),
+           TRUE ~ Knee.Ex.Max.Force..N..Asymmetry
+         )) %>%
+  na.omit()
+```
+Only has 4 observations from one player but not missing any data.
+
 
 3. VALD- Forcedecks datasets
 -filter out more, only cut down to half. Need to determine what metrics are most important first.
@@ -200,38 +295,30 @@ Forcedecks_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - ForceDecks 
 
 ```{r}
 # Forcedecks (VALD) basketball data 
-forcedecks_B <- Forcedecks_B[ , -c(
-  1, 5, 6, 7, 8, 10, 12, 13, 16, 17, 18, 20, 22, 23, 25, 33, 34, 35, 36, 37,
-  39, 40, 45, 46, 47, 48, 50, 51, 54, 55, 59, 60, 68, 69, 75, 76, 81, 82, 84,
-  85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 101, 110, 111, 112, 113,
-  114, 117, 118, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-  135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 150,
-  151, 154, 155, 158, 159, 162, 163, 164, 165, 166, 167, 168, 172, 173, 176,
-  177, 178, 179, 182, 184, 185, 186, 187, 195, 196, 199, 200, 203, 204, 207,
-  208, 211, 212, 215, 216, 219, 223, 224, 226, 227, 228, 229, 231, 232, 234,
-  236, 237, 239, 240, 242, 243, 245, 246, 247, 248, 249, 250, 251, 252, 253,
-  254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268,
-  269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
-  284, 285, 286, 287, 289, 290, 292, 293, 295, 296, 299, 300, 301, 303, 304,
-  305, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320,
-  321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334:342,
-  344, 345, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359,
-  360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374,
-  375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389,
-  390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404,
-  405, 406, 407, 410, 411, 412, 415, 416, 418, 419, 422, 423, 428, 429, 432,
-  433, 436, 437, 440, 441, 444, 445, 448, 449, 451, 452, 453, 454, 456, 457,
-  462, 463, 464, 466, 467, 473, 474, 477, 478, 481, 482, 484, 485, 489, 490,
-  495, 496, 500, 501, 502, 503, 504, 505, 506, 510, 513, 515, 516, 517, 518,
-  519, 520, 521, 522, 546, 547, 548, 549, 550, 551, 567, 585, 590, 591, 595,
-  596, 601, 604, 605, 606, 611, 618, 619, 620, 621, 622, 623, 639, 640, 641,
-  642, 643, 644, 645, 646, 647, 648, 650, 651, 652, 653, 654, 655, 656, 657,
-  658, 659, 660, 661, 662, 663, 664, 665, 670, 671, 672, 673, 674, 675, 676,
-  677, 678, 693, 696, 697, 698, 701, 705, 707, 708, 709, 710, 724, 727, 728,
-  743, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768,
-  769, 770, 771, 772, 773
-)]
+#selects variables of interest
+forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))            #2751 obs & 36 vars.
 ```
+
+```{r}
+#convert empty vectors to NA
+forcedecks_B[forcedecks_B==""] <- NA
+
+#colSums(is.na(forcedecks_B)) look at NAs in columns 
+```
+
+
+
+
+
+
+
+
+
+
 
 ```{r}
 #forcedecks (VALD) soccer data
