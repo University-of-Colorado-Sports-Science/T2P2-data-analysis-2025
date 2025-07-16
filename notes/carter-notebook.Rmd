@@ -72,8 +72,8 @@ incident_B <- subset(Incident_B,select=c("anon_id","Date", "Position", "Incident
 #12/5/23-1/2/25 DATE RANGE
 
 #Lower body injuries 
-lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
-incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
+lower_body <- c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip")
+incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
 sum(incident_B$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -306,6 +306,243 @@ ggplot(dynamo_all, aes(x = Avg.Max.Force, fill = Sport)) +
 This data will probably not be very useful especially since only two unique players are represented in WBB, and only one in both WVB and WSOC WLAX has 9 unique players but very few comparisons can be made across sports. 
 
 
+## Forcedecks
+
+
+**1. Basketball**
+
+```{r}
+#Forcedecks (VALD) basketball data 
+#selects variables of interest
+forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral","Relative.Eccentric.Power.Bilateral", "Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.","Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.","Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.", "Max.CMJ.Jump.Height..cm.","Max.CMJ.RSI.Modified..m.s.", "Max.CMJ.Concentric.RPD..N.s.", "Max.CMJ.Peak.Power..W.", "Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))            #2751 obs & 36 vars.
+
+#convert empty vectors to NA
+forcedecks_B[forcedecks_B==""] <- NA    #colSums(is.na(forcedecks_B)) look at NAs in columns
+
+#set all needed variables to numeric
+forcedecks_B$Countermovement.Depth..cm. <- as.numeric(forcedecks_B$Countermovement.Depth..cm.)
+forcedecks_B$Peak.Power...BM..W.kg. <- as.numeric(forcedecks_B$Peak.Power...BM..W.kg.)
+
+#combining values from different observations into one
+forcedecks_b <- forcedecks_B %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )                   #1343 obs & 32 vars
+
+#fix NaN values 
+```
+
+```{r}
+hj_b <- Forcedecks_B %>%
+  filter(Test.Type == 'HJ') %>%
+  select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm.) %>%
+  na.omit()
+```
+
+```{r}
+ggplot(hj_b, aes(Mean.RSI..Flight.Contact.Time.)) + 
+  geom_histogram()
+```
+
+```{r}
+forcedecks_bb <- forcedecks_b %>%
+  na.omit()   #463 obs & 32 vars
+```
+
+**2. Soccer**
+
+```{r}
+#forcedecks (VALD) soccer data
+#selects variables of interest
+forcedecks_S <- subset(Forcedecks_S, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #3443 obs & 36 vars 
+
+forcedecks_S[forcedecks_S==""] <- NA
+
+#combining values from different observations into one
+forcedecks_s <- forcedecks_S %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 1077 obs & 32 vars
+
+forcedecks_soc <- forcedecks_s %>%
+  na.omit()   #621 obs & 32 vars
+```
+
+**3. Lacrosse**
+
+```{r}
+#forcedecks (VALD) lacrosse data
+#selects variables of interest
+forcedecks_L <- subset(Forcedecks_L, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #1939 obs & 36 vars 
+
+forcedecks_L[forcedecks_L==""] <- NA
+
+#combining values from different observations into one
+forcedecks_l <- forcedecks_L %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 717 obs & 32 vars
+
+forcedecks_lax <- forcedecks_l %>%
+  na.omit()   #390s & 32 vars
+```
+
+**4. Volleyball**
+
+```{r}
+#forcedecks (VALD) volleyball data
+forcedecks_V <- subset(Forcedecks_V, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
+"Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
+"Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
+"Max.CMJ.RSI.Modified..m.s.","Max.CMJ.Concentric.RPD..N.s.","Max.CMJ.Peak.Power..W.","Max.CMJ.Peak.Landing.Force..N.","CMJ.Concentric.Relative.Peak.Power...Difference.from.First","CMJ.Eccentric.Relative.Peak.Power...Difference.from.First","Eccentric.Asymmetry","Concentric.Asymmetry"
+))        #5332 obs & 36 vars 
+
+forcedecks_V[forcedecks_V==""] <- NA
+
+#combining values from different observations into one
+forcedecks_v <- forcedecks_V %>%
+mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
+  group_by(anon_id, Date) %>%
+  summarise(Weight..kg. = mean(Weight..kg., na.rm = TRUE),
+            Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
+            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
+            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
+            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
+            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
+            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
+            Concentric.Maximum.RFD..N.s.= mean(Concentric.Maximum.RFD..N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Right...N.s.= mean(Concentric.Maximum.RFD..Right...N.s.,na.rm=TRUE),
+            Concentric.Maximum.RFD..Left...N.s.= mean(Concentric.Maximum.RFD..Left...N.s.,na.rm=TRUE),
+            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
+            Max.Jump.Height..cm.= mean(Max.Jump.Height..cm.,na.rm=TRUE),
+            Max.Concentric.Peak.Force..N.= mean(Max.Concentric.Peak.Force..N.,na.rm=TRUE),
+            Relative.Concentric.Power.Bilateral= mean(Relative.Concentric.Power.Bilateral,na.rm=TRUE),
+            Relative.Eccentric.Power.Bilateral= mean(Relative.Eccentric.Power.Bilateral,na.rm=TRUE),
+            Max.Peak.Power...BM= mean(Max.Peak.Power...BM,na.rm=TRUE),
+            Max.Eccentric.Peak.Force..N.= mean(Max.Eccentric.Peak.Force..N.,na.rm=TRUE),
+            Max.RSI.Modified.VALD= mean(Max.RSI.Modified.VALD,na.rm=TRUE),
+            Max.Concentric.RPD..N.s.= mean(Max.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.Concentric.Peak.Velocity..m.s.= mean(Max.Concentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Eccentric.Peak.Velocity..m.s.= mean(Max.Eccentric.Peak.Velocity..m.s.,na.rm=TRUE),
+            Max.Peak.Landing.Force..N.= mean(Max.Peak.Landing.Force..N.,na.rm=TRUE),
+            MAX.Concentric.Peak.Power..W.= mean(MAX.Concentric.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Jump.Height..cm.= mean(Max.CMJ.Jump.Height..cm.,na.rm=TRUE),
+            Max.CMJ.RSI.Modified..m.s.= mean(Max.CMJ.RSI.Modified..m.s.,na.rm=TRUE),
+            Max.CMJ.Concentric.RPD..N.s.= mean(Max.CMJ.Concentric.RPD..N.s.,na.rm=TRUE),
+            Max.CMJ.Peak.Power..W.= mean(Max.CMJ.Peak.Power..W.,na.rm=TRUE),
+            Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
+            CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
+            CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #Eccentric.Asymmetry=mode function needs to be created
+              )               # 1416 obs & 32 vars
+
+forcedecks_vb <- forcedecks_v %>%
+  na.omit()   #508 obs & 32 vars
+```
+
+
 ## Performance
 
 
@@ -346,6 +583,7 @@ Need to either get more data on positions of players or get rid of percent diffe
 Hip dataset contains 109 observations including the bodyweight variable, 129 otherwise. 
 
 ```{r}
+#summarizes the number of unique athletes per position group
 performance_B_nordic %>%
   group_by(Position) %>%
   summarize(`Unique Athletes` = n_distinct(anon_id))
@@ -366,6 +604,7 @@ ggplot(performance_B_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 Centers appear to have a far greater variability in force along with a lower median of force in comparison to forwards and guards. The same appears to be true for the relative force. Interestingly when plotting the athlete bodyweight vs position there is no signifiant differences and the median weight for centers is less than the median weight of guards and forwards. 
 
 ```{r}
+#creates a correlation matrix of all numerical values
 cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 
@@ -404,6 +643,7 @@ Does not contain any information about positional norms so there are no percent 
 Hip dataset contains only 39 observations with body weight included and without it included. 
 
 ```{r}
+#summarizes the number of unique athletes per position group
 performance_S_nordic %>%
   group_by(Position) %>%
   summarize(`Unique Athletes` = n_distinct(anon_id))
@@ -424,6 +664,7 @@ ggplot(performance_S_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 There is a big outlier in ID_3 whos mean maximum bilateral force in newtons was less than her bodyweight in kg.
 
 ```{r}
+#creates a correlation matrix of all numerical values
 cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 
@@ -462,6 +703,7 @@ Also does not contain any information about positional norms so there are no per
 Hip dataset contains 100 observations with bodyweight included and excluded. 
 
 ```{r}
+#summarizes the number of unique athletes per position group
 performance_L_nordic %>%
   group_by(Position) %>%
   summarize(`Unique Athletes` = n_distinct(anon_id))
@@ -482,6 +724,7 @@ ggplot(performance_L_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 All the positions seem to have a similar distribution of maximum relative bilateral force. 
 
 ```{r}
+#creates a correlation matrix of all numerical values
 cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 
@@ -522,6 +765,7 @@ Does have positional norm information but a lot of missing values. Only 33 obser
 Hip data contains 180 observations with bodyweight included, 220 otherwise.
 
 ```{r}
+#summarizes the number of unique athletes per position group
 performance_V_nordic %>%
   group_by(Position) %>%
   summarize(`Unique Athletes` = n_distinct(anon_id))
@@ -542,26 +786,8 @@ ggplot(performance_V_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 Middle Blocker|Opposite looks like it would fit more into Middle Blocker, Libero|Defensive specialist looks like it could fit inot Libero. Opposite|Outside Hitter is harder to tell. 
 
 ```{r}
+#creates a correlation matrix of all numerical values
 cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
-```
-
-### Exploratory Plots
-
-```{r}
-#creating a dataset containing performance data accross all sports
-performance_all_nordic <- rbind(performance_B_nordic, performance_S_nordic, performance_L_nordic, performance_V_nordic) %>%
-  mutate(Max.Force.Per.BW = Maximum.Force / Athlete.Bodyweight..kg.,
-         Thresh = ifelse(Max.Force.Per.BW > 5, 1, 0))
-```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the 4 sports
-ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Sport)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Sports',
-       y = 'Sport',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
 ```
 
 
@@ -724,15 +950,17 @@ ggplot(performance_V_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 ## In Relation to Injury Timelines
 
 
+Looking 6 months in the past may be way too long need to figure out what window works best depending on which injuries. Also want to discuss if want to group by player and group and condense observations or just leave observations as is. 
 **1. Basketball**
 
 ```{r}
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incident_b <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+         Season. = ifelse(Season. == 'Pre-Season' | Season. == 'Summer Workouts' | Season. == 'Post-Season', 'Off-Season', Season.),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y')) %>%
   ungroup() %>%
   group_by(across(everything())) %>%
@@ -749,7 +977,7 @@ last_injury_B <- incident_b %>%
             Injury = paste0(Final.Diagnosis, collapse = " and "),
             Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
   separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4'), sep = ' and ') %>%
-  mutate(Injury.1.Start = as.Date(Injury.1) - months(6),
+  mutate(Injury.1.Start = as.Date(Injury.1) - months(1),
          Injury.2.Start = ifelse(is.na(Injury.2), NA, Injury.1),
          Injury.3.Start = ifelse(is.na(Injury.3), NA, Injury.2),
          Injury.4.Start = ifelse(is.na(Injury.4), NA, Injury.3)) %>%
@@ -784,22 +1012,12 @@ merge_performance_B <- merge_performance_B %>%
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
   )) %>%
-  group_by(anon_id, Group, Position, Injury) %>%
-  summarise(Bodyweight.kg = mean(Athlete.Bodyweight..kg., na.rm = TRUE),
-            Maximum.Force = mean(Maximum.Force, na.rm = TRUE),
-            Average.Force = mean(Average.Force, na.rm = TRUE),
-            Impulse = mean(Impulse, na.rm = TRUE),
-            Nordic.MEAN.Imbalance = mean(Nordic.MEAN.Imbalance, na.rm = TRUE),
-            Nordic.MAX.Imbalance = mean(Nordic.MAX.Imbalance, na.rm = TRUE),
-            Trend = mean(Trend, na.rm = TRUE),
-            Maximum.Nordic.Bilateral.Mean = mean(Maximum.Nordic.Bilateral.Mean, na.rm = TRUE),
-            Relative.Maximum.Nordic.Bilateral.Mean = mean(Relative.Maximum.Nordic.Bilateral.Mean, na.rm = TRUE), .groups = 'drop') %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group))
 ```
 
 ```{r}
 #creates a boxplot of maximum relative bilateral force across the basketball players
-ggplot(merge_performance_B, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
+ggplot(merge_performance_B, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = ACL)) +
   geom_boxplot(fill = '#CFB87C', color = 'black') + 
   labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Players',
        y = 'Was the Player Injured',
@@ -815,13 +1033,17 @@ In the Womens basketball dataset there is no performance data in the time prior 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incident_s <- Incident_S %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
-         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y')) %>%
+         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
+         Season. = ifelse(Season. == 'Pre-Season' | Season. == 'Summer Workouts' | Season. == 'Post-Season', 'Off-Season', Season.)) %>%
   ungroup() %>%
   group_by(across(everything())) %>%
   summarise(.groups = 'drop')
+
+#get rid of duplicate observation with very small diagnosis differences
+incident_s <- incident_s[-3,]
 ```
 
 ```{r, warning = FALSE}
@@ -878,7 +1100,7 @@ merge_performance_S <- merge_performance_S %>%
     Group == 7 ~ Injury.3.Diagnosis,
     TRUE ~ 'After'
   )) %>%
-  group_by(anon_id, Group, Position, Injury) %>%
+  group_by(anon_id, Group, Injury) %>%
   summarise(Bodyweight.kg = mean(Athlete.Bodyweight..kg., na.rm = TRUE),
             Maximum.Force = mean(Maximum.Force, na.rm = TRUE),
             Average.Force = mean(Average.Force, na.rm = TRUE),
@@ -903,6 +1125,266 @@ ggplot(merge_performance_S, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = 
 
 It appears from this graph that soccer athletes that were either didn't suffer a lower body injury or at a time before 6 months prior to an injury were, on average, weaker in terms of relative bilateral force in comparison to those who did have a lower body injury occur. 
 
+**3. Lacrosse**
+
+```{r}
+#selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
+incident_l <- Incident_L %>%
+  filter(Body.Part %in% lower_body) %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
+  mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
+         Season. = ifelse(Season. == 'Pre-Season' | Season. == 'Summer Workouts' | Season. == 'Post-Season', 'Off-Season', Season.)) %>%
+  ungroup() %>%
+  group_by(across(everything())) %>%
+  summarise(.groups = 'drop')
+```
+
+```{r, warning = FALSE}
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+last_injury_L <- incident_l %>%
+  arrange(Date) %>%
+  group_by(anon_id) %>%
+  summarize(Dates.Final = paste0(Date, collapse = " and "),
+            Mechanism = paste0(General.Mechanism, collapse = " and "),
+            Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
+  separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4', 'Injury.5', 'Injury.6', 'Injury.7'), sep = ' and ') %>%
+  mutate(Injury.1.Start = as.Date(Injury.1) - months(6),
+         Injury.2.Start = ifelse(is.na(Injury.2), NA, Injury.1),
+         Injury.3.Start = ifelse(is.na(Injury.3), NA, Injury.2),
+         Injury.4.Start = ifelse(is.na(Injury.4), NA, Injury.3),
+         Injury.5.Start = ifelse(is.na(Injury.4), NA, Injury.4),
+         Injury.6.Start = ifelse(is.na(Injury.4), NA, Injury.5),
+         Injury.7.Start = ifelse(is.na(Injury.4), NA, Injury.6)) %>%
+  separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech', 'Injury.5.Mech', 'Injury.6.Mech', 'Injury.7.Mech'), sep = ' and ') %>%
+  separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis', 'Injury.5.Diagnosis', 'Injury.6.Diagnosis', 'Injury.7.Diagnosis'), sep = ' and ') %>%
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ')
+```
+
+```{r}
+#merges the last_injury_S to the performance_S_nordic by anon_id
+merge_performance_L <- merge(last_injury_L, performance_L_nordic, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_performance_L <- merge_performance_L %>%
+  mutate(Trend = ifelse(Trend == 'Neutral', 0, ifelse(Trend == 'Up', 1, -1)),
+         Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_performance_L <- merge_performance_L %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.1.Diagnosis,
+    Group == 6 ~ Injury.2.Diagnosis,
+    Group == 7 ~ Injury.3.Diagnosis,
+    TRUE ~ 'After'
+  )) %>%
+  group_by(anon_id, Group, Injury) %>%
+  summarise(Bodyweight.kg = mean(Athlete.Bodyweight..kg., na.rm = TRUE),
+            Maximum.Force = mean(Maximum.Force, na.rm = TRUE),
+            Average.Force = mean(Average.Force, na.rm = TRUE),
+            Impulse = mean(Impulse, na.rm = TRUE),
+            Nordic.MEAN.Imbalance = mean(Nordic.MEAN.Imbalance, na.rm = TRUE),
+            Nordic.MAX.Imbalance = mean(Nordic.MAX.Imbalance, na.rm = TRUE),
+            Trend = mean(Trend, na.rm = TRUE),
+            Maximum.Nordic.Bilateral.Mean = mean(Maximum.Nordic.Bilateral.Mean, na.rm = TRUE),
+            Relative.Maximum.Nordic.Bilateral.Mean = mean(Relative.Maximum.Nordic.Bilateral.Mean, na.rm = TRUE), .groups = 'drop') %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group))
+```
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the soccer players
+ggplot(merge_performance_L, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Lacrosse Players',
+       y = 'Was the Player Injured',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+
+**4. Volleyball**
+
+```{r}
+#selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
+incident_v <- Incident_V %>%
+  filter(Body.Part %in% lower_body) %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
+  mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+         Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
+         Season. = ifelse(Season. == 'Pre-Season' | Season. == 'Summer Workouts' | Season. == 'Post-Season', 'Off-Season', Season.)) %>%
+  ungroup() %>%
+  group_by(across(everything())) %>%
+  summarise(.groups = 'drop')
+```
+
+```{r, warning = FALSE}
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+last_injury_V <- incident_v %>%
+  arrange(Date) %>%
+  group_by(anon_id) %>%
+  summarize(Dates.Final = paste0(Date, collapse = " and "),
+            Mechanism = paste0(General.Mechanism, collapse = " and "),
+            Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
+  separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4', 'Injury.5', 'Injury.6', 'Injury.7'), sep = ' and ') %>%
+  mutate(Injury.1.Start = as.Date(Injury.1) - months(6),
+         Injury.2.Start = ifelse(is.na(Injury.2), NA, Injury.1),
+         Injury.3.Start = ifelse(is.na(Injury.3), NA, Injury.2),
+         Injury.4.Start = ifelse(is.na(Injury.4), NA, Injury.3),
+         Injury.5.Start = ifelse(is.na(Injury.4), NA, Injury.4),
+         Injury.6.Start = ifelse(is.na(Injury.4), NA, Injury.5),
+         Injury.7.Start = ifelse(is.na(Injury.4), NA, Injury.6)) %>%
+  separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech', 'Injury.5.Mech', 'Injury.6.Mech', 'Injury.7.Mech'), sep = ' and ') %>%
+  separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis', 'Injury.5.Diagnosis', 'Injury.6.Diagnosis', 'Injury.7.Diagnosis'), sep = ' and ') %>%
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ')
+```
+
+```{r}
+#merges the last_injury_S to the performance_S_nordic by anon_id
+merge_performance_V <- merge(last_injury_V, performance_V_nordic, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_performance_V <- merge_performance_V %>%
+  mutate(Trend = ifelse(Trend == 'Neutral', 0, ifelse(Trend == 'Up', 1, -1)),
+         Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_performance_V <- merge_performance_V %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.1.Diagnosis,
+    Group == 6 ~ Injury.2.Diagnosis,
+    Group == 7 ~ Injury.3.Diagnosis,
+    TRUE ~ 'After'
+  )) %>%
+  group_by(anon_id, Group, Injury) %>%
+  summarise(Bodyweight.kg = mean(Athlete.Bodyweight..kg., na.rm = TRUE),
+            Maximum.Force = mean(Maximum.Force, na.rm = TRUE),
+            Average.Force = mean(Average.Force, na.rm = TRUE),
+            Impulse = mean(Impulse, na.rm = TRUE),
+            Nordic.MEAN.Imbalance = mean(Nordic.MEAN.Imbalance, na.rm = TRUE),
+            Nordic.MAX.Imbalance = mean(Nordic.MAX.Imbalance, na.rm = TRUE),
+            Trend = mean(Trend, na.rm = TRUE),
+            Maximum.Nordic.Bilateral.Mean = mean(Maximum.Nordic.Bilateral.Mean, na.rm = TRUE),
+            Relative.Maximum.Nordic.Bilateral.Mean = mean(Relative.Maximum.Nordic.Bilateral.Mean, na.rm = TRUE), .groups = 'drop') %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group))
+```
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the soccer players
+ggplot(merge_performance_V, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Lacrosse Players',
+       y = 'Was the Player Injured',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+
+**Merging All Together**
+
+```{r}
+#creating a dataset containing performance data accross all sports
+performance_all_injury <- rbind(merge_performance_B, merge_performance_S, merge_performance_L, merge_performance_V) %>%
+  mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= 5, 'Yes', 'No'))
+```
+
+```{r}
+ggplot(performance_all_injury, aes(Relative.Maximum.Nordic.Bilateral.Mean, fill = Was.Injured)) + 
+  geom_density(alpha = 0.4)
+```
+
 
 # Question 2: Strength Trends Across Sports
 
+
+```{r}
+#creating a dataset containing performance data across all sports
+performance_all_nordic <- rbind(performance_B_nordic, performance_S_nordic, performance_L_nordic, performance_V_nordic) %>%
+  mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= 5, 'Yes', 'No'))
+
+#creating a dataset containing performance hip data across all sports
+performance_all_hip <- rbind(performance_B_hip, performance_S_hip, performance_L_hip, performance_V_hip) %>%
+  mutate(Avg.Abd.Mean = (Hip.Abd.Left.MEAN + Hip.Abd.Right.MEAN) / 2,
+         Avg.Add.Mean = (Hip.Add.Left.MEAN + Hip.Add.Right.MEAN) / 2,
+         Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
+         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2,
+         Relative.Abd.Mean = Avg.Abd.Mean / Athlete.Bodyweight..kg.,
+         Relative.Add.Mean = Avg.Add.Mean / Athlete.Bodyweight..kg.,
+         Relative.Abd.Max = Avg.Abd.Max / Athlete.Bodyweight..kg.,
+         Relative.Add.Max = Avg.Add.Max / Athlete.Bodyweight..kg.)
+```
+
+```{r}
+#creates a table with lower body injury on left and whether the observation had higher relative bilateral strength above 5 on top
+table(performance_all_nordic$LB, performance_all_nordic$Thresh)
+```
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the 4 sports
+ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Sports',
+       y = 'Sport',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+
+```{r}
+#creates a density plot of hip abduction across the 4 sports
+ggplot(performance_all_hip, aes(x = Avg.Add.Max, fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Bilateral Max Adduction Across Sports',
+       x = 'Bilateral Adduction Max (N)',
+       y = 'Density') +
+  theme_bw()
+```
+
+```{r}
+ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, color = Sport, fill = Sport)) + 
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Relative Maximum Nordic Force Across Sports',
+       x = 'Relative Maximum Force (N / kg)',
+       y = 'Density') +
+  theme_bw()
+```
+
+```{r}
+#anova test for differences
+anova_result <- aov(Maximum.Force ~ Sport, data = performance_all_nordic)
+summary(anova_result)
+```
