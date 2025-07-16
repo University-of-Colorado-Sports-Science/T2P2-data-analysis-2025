@@ -97,10 +97,33 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
 incident_b$Length.of.Status <- difftime(incident_b$End.Date, incident_b$Start.of.Status,units=c("days"))
 ```
 In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
-```{r}
-#bball incidents plots
-#position by count if lower body injury 
 
+```{r}
+library(stringr)
+#rename one datapoint from position
+incident_b <- incident_b %>%
+  mutate(Position=case_when(
+    str_detect(Position, "Primary: Forward")~ "Forward",
+    str_detect(Position, "Forward")~ "Forward",
+    str_detect(Position, "Center")~ "Center",
+    str_detect(Position, "Guard")~ "Guard",
+    TRUE~Position
+  ))
+```
+
+```{r}
+#density plot of injuries across the different parts of a season  
+ggplot(incident_b, aes(x=Season.))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread",x="Season",y="Frequency")
+
+ggplot(incident_b, aes(x=General.mechanism))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread by Mechanism",x="Season",y="Frequency")
+
+ggplot(incident_b, aes(x=Position))+
+  geom_bar(fill="lightblue")+
+  labs(title="Positional Injury Spread",x="Players Positions",y="Frequency")
 ```
 
 ```{r}
@@ -150,9 +173,20 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
 incident_s$Length.of.Status <- difftime(incident_s$End.Date, incident_s$Start.of.Status,units=c("days"))
 ```
 In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
+
 ```{r}
-#soccer incident plot
-#position by count of lower body injuries 
+#density plot of injuries across the different parts of a season  
+ggplot(incident_s, aes(x=Season.))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread",x="Season",y="Frequency")
+
+ggplot(incident_s, aes(x=General.mechanism))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread by Mechanism",x="Season",y="Frequency")
+
+ggplot(incident_s, aes(x=Position))+
+  geom_bar(fill="lightblue")+
+  labs(title="Positional Injury Spread",x="Players Positions",y="Frequency")
 ```
 
 ```{r}
@@ -189,11 +223,22 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
 incident_v$Length.of.Status <- difftime(incident_v$End.Date, incident_v$Start.of.Status,units=c("days"))
 ```
 In womens' volleyball 60 lower body injuries occured, 10 of them beig ACL injuries, 4 of them being HSI injuries. 
-```{r}
-#vball incident plot
-#positions by count of lower body injuries 
-```
 
+```{r}
+#density plot of injuries across the different parts of a season  
+ggplot(incident_v, aes(x=Season.))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread",x="Season",y="Frequency")
+
+ggplot(incident_v, aes(x=General.mechanism))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread by Mechanism",x="Season",y="Frequency")
+
+ggplot(incident_v, aes(x=Position))+
+  geom_bar(fill="lightblue")+
+  theme(axis.text.x=element_text(angle=45,hjust=1))+
+  labs(title="Positional Injury Spread",x="Players Positions",y="Frequency")
+```
 
 ```{r}
 #LACROSSE incident dataset 
@@ -228,7 +273,20 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
 incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
 ```
 In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
+```{r}
+#density plot of injuries across the different parts of a season  
+ggplot(incident_l, aes(x=Season.))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread",x="Season",y="Frequency")
 
+ggplot(incident_l, aes(x=General.mechanism))+
+  geom_bar(fill="lightblue")+
+  labs(title="Seasonal Injury Spread by Mechanism",x="Season",y="Frequency")
+
+ggplot(incident_l, aes(x=Position))+
+  geom_bar(fill="lightblue")+
+  labs(title="Positional Injury Spread",x="Players Positions",y="Frequency")
+```
 
 2. VALD- Dynamo datasets
 -we need to know the calculations for the asymmetry measures because they seem inconsistent.
