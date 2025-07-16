@@ -100,6 +100,7 @@ In womens basketball we have 80 total lower body injuries, 3 of those injuries a
 ```{r}
 #bball incidents plots
 #position by count if lower body injury 
+
 ```
 
 ```{r}
@@ -344,7 +345,9 @@ forcedecks_B <- subset(Forcedecks_B, select = c("anon_id","Date","Position","Tes
 
 #convert empty vectors to NA
 forcedecks_B[forcedecks_B==""] <- NA    #colSums(is.na(forcedecks_B)) look at NAs in columns
+```
 
+```{r}
 #set all needed variables to numeric
 forcedecks_B$Countermovement.Depth..cm. <- as.numeric(forcedecks_B$Countermovement.Depth..cm.)
 forcedecks_B$Peak.Power...BM..W.kg. <- as.numeric(forcedecks_B$Peak.Power...BM..W.kg.)
@@ -383,10 +386,10 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
             Max.CMJ.Peak.Landing.Force..N.= mean(Max.CMJ.Peak.Landing.Force..N.,na.rm=TRUE),
             CMJ.Concentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Concentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE),
             CMJ.Eccentric.Relative.Peak.Power...Difference.from.First= mean(CMJ.Eccentric.Relative.Peak.Power...Difference.from.First,na.rm=TRUE)
+            #est.Type=Test.Type
             #Eccentric.Asymmetry=mode function needs to be created
+          
               )                   #1343 obs & 32 vars
-
-#fix NaN values 
 ```
 
 ```{r}
