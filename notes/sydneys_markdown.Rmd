@@ -765,7 +765,6 @@ Performance_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performanc
 Performance_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WLAx (1).csv")
 Performance_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/VALD - Performance Test WVB.csv")
 ```
-
 Of all performance datasets, only basketball and volleyball have positional norm information but are also missing a lot of positional information which makes this column sparse. None of the datasets contain rotational data or razor data. Contain small amounts of iso prone data.
 
 #Basketball preformance data 
@@ -796,34 +795,6 @@ Need to either get more data on positions of players or get rid of percent diffe
 
 Hip dataset contains 109 observations including the bodyweight variable, 129 otherwise. 
 
-```{r}
-#summarizes the number of unique athletes per position group
-performance_B_nordic %>%
-  group_by(Position) %>%
-  summarize(`Unique Athletes` = n_distinct(anon_id))
-```
-
-There are only 4 unique centers represented with most of the observations being ID_40 and ID_51, ID_15 and ID_30 each only have one observation. Forwards only have 8 unique players but the split between these players is more even with the exception of ID_24 who only has one observation. Guards has 10 unique players with ID_55 making up a large proportion of these observations and ID_5, ID_54, and ID_63 only being represented once. 
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball positions
-ggplot(performance_B_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
-       y = 'Position',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-
-Centers appear to have a far greater variability in force along with a lower median of force in comparison to forwards and guards. The same appears to be true for the relative force. Interestingly when plotting the athlete bodyweight vs position there is no signifiant differences and the median weight for centers is less than the median weight of guards and forwards.
-
-```{r}
-#creates a correlation matrix of all numerical values
-cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
-```
-
-Interestingly bodyweight is most correlated with maximum force. Also interestingly Maximum.Force is equal to Nordic.Left.MAX and Average.Force is equal to Nordic.Left.MEAn, is this supposed to be the case? Not a whole lot of colinearity otherwise.
-
 #Soccer preformance data
 ```{r}
 #selects variables of interest, nordic and hip data, and cleans up position variable
@@ -848,34 +819,7 @@ performance_S_hip <- performance_S %>%
 ```
 Does not contain any information about positional norms so there are no percent differences from norm. 421 observations with z-scores. 483 observations without z-scores. There are 400 observations if bodyweight is included.  
 
-Hip dataset contains only 39 observations with body weight included and without it included. 
-
-```{r}
-#summarizes the number of unique athletes per position group
-performance_S_nordic %>%
-  group_by(Position) %>%
-  summarize(`Unique Athletes` = n_distinct(anon_id))
-```
-
-There are only one unique outside back and center back players. Only 4 defense midfield players with ID_32 only having one observation. Only 3 goalies, relatively even distribution of observations. 7 forwards, also pretty even distribution of observations. 7 midfeilders with ID_94 and ID_32 only representing one observation each. 
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball positions
-ggplot(performance_S_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
-       y = 'Position',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-There is a big outlier in ID_3 whos mean maximum bilateral force in newtons was less than her bodyweight in kg.
-
-```{r}
-#creates a correlation matrix of all numerical values
-cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
-```
-Athlete bodyweight is less correlated with any strength measures.
-
+Hip dataset contains only 39 observations with body weight included and without it included.
 
 #Lacrosse preformance data
 ```{r}
@@ -903,31 +847,6 @@ performance_L_hip <- performance_L %>%
 Also does not contain any information about positional norms so there are no percent differences from norm. 855 observations with z-scores. 929 observations without z-scores. 810 observations if bodyweight is included.  
 
 Hip dataset contains 100 observations with bodyweight included and excluded. 
-
-```{r}
-#summarizes the number of unique athletes per position group
-performance_L_nordic %>%
-  group_by(Position) %>%
-  summarize(`Unique Athletes` = n_distinct(anon_id))
-```
-This dataset seems to have a better amount of unique players per position. 
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball positions
-ggplot(performance_L_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
-       y = 'Position',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-All the positions seem to have a similar distribution of maximum relative bilateral force. 
-
-```{r}
-#creates a correlation matrix of all numerical values
-cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
-```
-
 
 #Volleyball preformance data
 ```{r}
@@ -957,7 +876,6 @@ There are a lot of observations with the player playing multiple positions, need
 Does have positional norm information but a lot of missing values. Only 33 observations with percent difference norm and z-scores. 356 observations with only z-scores. 393 observations without either percent difference norm or z-scores. 325 observations if bodyweight is included.
 
 Hip data contains 180 observations with bodyweight included, 220 otherwise.
-
 
 
 ## Exploratory Analysis 
@@ -1029,7 +947,6 @@ Like volleyball strong lead of non-contact injuries then any other type of injur
 
 2. Dynamo
 -NO PLOTS ATM
-
 
 3. Forcedecks 
 #Variable Distribution Plots
@@ -1145,6 +1062,82 @@ S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by
 
 4. Performance 
 ```{r}
+#summarizes the number of unique athletes per position group
+performance_B_nordic %>%
+  group_by(Position) %>%
+  summarize(`Unique Athletes` = n_distinct(anon_id))
+```
+
+There are only 4 unique centers represented with most of the observations being ID_40 and ID_51, ID_15 and ID_30 each only have one observation. Forwards only have 8 unique players but the split between these players is more even with the exception of ID_24 who only has one observation. Guards has 10 unique players with ID_55 making up a large proportion of these observations and ID_5, ID_54, and ID_63 only being represented once. 
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the basketball positions
+ggplot(performance_B_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
+       y = 'Position',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+
+Centers appear to have a far greater variability in force along with a lower median of force in comparison to forwards and guards. The same appears to be true for the relative force. Interestingly when plotting the athlete bodyweight vs position there is no signifiant differences and the median weight for centers is less than the median weight of guards and forwards.
+
+```{r}
+#creates a correlation matrix of all numerical values
+cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+```
+Interestingly bodyweight is most correlated with maximum force. Also interestingly Maximum.Force is equal to Nordic.Left.MAX and Average.Force is equal to Nordic.Left.MEAn, is this supposed to be the case? Not a whole lot of colinearity otherwise.
+```{r}
+#summarizes the number of unique athletes per position group
+performance_S_nordic %>%
+  group_by(Position) %>%
+  summarize(`Unique Athletes` = n_distinct(anon_id))
+```
+
+There are only one unique outside back and center back players. Only 4 defense midfield players with ID_32 only having one observation. Only 3 goalies, relatively even distribution of observations. 7 forwards, also pretty even distribution of observations. 7 midfeilders with ID_94 and ID_32 only representing one observation each. 
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the basketball positions
+ggplot(performance_S_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
+       y = 'Position',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+There is a big outlier in ID_3 whos mean maximum bilateral force in newtons was less than her bodyweight in kg.
+
+```{r}
+#creates a correlation matrix of all numerical values
+cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+```
+Athlete bodyweight is less correlated with any strength measures.
+
+```{r}
+#summarizes the number of unique athletes per position group
+performance_L_nordic %>%
+  group_by(Position) %>%
+  summarize(`Unique Athletes` = n_distinct(anon_id))
+```
+This dataset seems to have a better amount of unique players per position. 
+
+```{r}
+#creates a boxplot of maximum relative bilateral force across the basketball positions
+ggplot(performance_L_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Position)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Postions',
+       y = 'Position',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+```
+All the positions seem to have a similar distribution of maximum relative bilateral force. 
+
+```{r}
+#creates a correlation matrix of all numerical values
+cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+```
+
+```{r}
 #summarizes the number of unique athletes per position group in preformance data 
 performance_V_nordic %>%
   group_by(Position) %>%
@@ -1170,8 +1163,12 @@ cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 #ADD REST FROM SECTION ABOVE
 
 
+
+
+
 ##MERGE DATASETS 
 #incident + performance (nordic + hip), forceframe (multiple tests)
+-dynamo not to be added 
 ```{r}
 #ALL BASKETBALL DATA incident_b(128) performance_B_hip(109) performance_B_nordic (521), CMJ_bb(194), HJ_B(409), IMTP_B (50)
 basketball_merge <- merge(performance_B_nordic,performance_B_hip, by=c('anon_id','Date'), all=TRUE)
@@ -1184,32 +1181,37 @@ bb_merge_full <- merge(bball_merge,IMTP_B, by=c('anon_id','Date'), all=TRUE)  #1
 ```
 
 ```{r}
-#ALL SOCCER DATA //NEED TO ADD SLJ
+#ALL SOCCER DATA 
 soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
 soc_merge <- merge(soccer_merge,incident_s, by=c('anon_id','Date'), all=TRUE)
 s_merge <- merge(soc_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
 S_merge <- merge(s_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
-soc_merge_full <- merge(S_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)   #213 by 110
+soc_merge_full <- merge(S_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)   #1233 by 168
+soccer_merge_full <- merge(soc_merge_full, SLJ_s, by=c('anon_id','Date'), all=TRUE)  #1233 by 168
 ```
 
 ```{r}
-#ALL LACROSSE DATA    //NEED TO ADD SLJ
+#ALL LACROSSE DATA    
 lacrosse_merge <- merge(performance_L_nordic,performance_L_hip, by=c('anon_id','Date'), all=TRUE)
 lax_merge <- merge(lacrosse_merge,incident_l, by=c('anon_id','Date'), all=TRUE)
 l_merge <- merge(lax_merge,HJ_L, by=c('anon_id','Date'), all=TRUE)
 L_merge <- merge(l_merge,CMJ_lax, by=c('anon_id','Date'), all=TRUE)
 lax_merge_full <- merge(L_merge,IMTP_L, by=c('anon_id','Date'), all=TRUE)   #1390 by 145
+lacrosse_merge_full <- merge(lax_merge_full, SLJ_L, by=c('anon_id','Date'), all=TRUE) 
 ```
 
 ```{r}
 #ALL VOLLEYBALL DATA
-soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
-soc_merge <- merge(basketball_merge,incident_s, by=c('anon_id','Date'), all=TRUE)
-s_merge <- merge(basket_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
-S_merge <- merge(bball_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
-soc_merge_full <- merge(bball_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)
+volleyball_merge <- merge(performance_V_nordic,performance_V_hip, by=c('anon_id','Date'), all=TRUE)
+vball_merge <- merge(volleyball_merge,incident_v, by=c('anon_id','Date'), all=TRUE)
+vb_merge <- merge(vball_merge,HJ_V, by=c('anon_id','Date'), all=TRUE)
+v_merge <- merge(vb_merge,CMJ_vb, by=c('anon_id','Date'), all=TRUE)
+vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #1140 by 143
 ```
 
+```{r}
+#when large merge with all sports datasets together to
+```
 
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
 a. For example, one of our strength coaches uses 5 times body weight (kg) in Newtons for hamstring strength as a cutoff for injury risk. Is this supported by our data? 
@@ -1578,7 +1580,6 @@ ggplot(merge_performance_V, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = 
   theme_bw()
 ```
 
-
 ```{r}
 #creating a boxplot displaying distribution of relative maximum bilateral mean(different variable) in those who experienced lower body injury vs those that did not
 ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Maximum.Force, y = LB)) + 
@@ -1593,6 +1594,32 @@ ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Ma
 
 #Q2:What trends in strength do we see across the women’s team sports? 
 a. Soccer, lacrosse, volleyball, basketball. 
+```{r}
+#create a dataset containing all CMJ test data across all sports
+all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) %>%
+ # mutate(Thresh = ifelse(Variable >= #, 'Yes', 'No'))
+```
+
+```{r}
+#create a dataset containing all HJ test data across all sports
+all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
+  #mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= #, 'Yes', 'No'))
+```
+
+```{r}
+#create a dataset containing all IMTP test data across all sports
+all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V) %>%
+```
+
+```{r}
+#create a dataset containing all SLJ test data across all sports
+all_SLJ <- rbind(SLJ_soc, SLJ_L) %>%
+```
+
+
+
+
+
 
 ```{r}
 #creating a dataset containing performance data across all sports
@@ -1654,6 +1681,4 @@ ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, c
 anova_result <- aov(Maximum.Force ~ Sport, data = performance_all_nordic)
 summary(anova_result)
 ```
-
-
 
