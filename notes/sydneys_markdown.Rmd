@@ -66,11 +66,12 @@ Incident_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WVB.
 #BASKETBALL Incident dataset
 Incident_B <- Incident_B %>%                    #189 -> 128 obs.
 filter(Incident.Type=="Injury") %>%
+filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes")  %>%
 select(-Result.of.Sport.Participation)
 
 incident_B <- subset(Incident_B,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #add,"Injured.Position",
-        # 128 obs. + 26 vars.
+        #53 obs. + 27 vars.
 
 #Lower body injuries 
 lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
@@ -120,11 +121,12 @@ In womens basketball we have 80 total lower body injuries, 3 of those injuries a
 #SOCCER INCIDENT dataset
 Incident_S <- Incident_S %>%                    #361 -> 288 obs.
 filter(Incident.Type=="Injury") %>%
+filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes") %>%
 select(-Result.of.Sport.Participation)
 
 incident_S <- subset(Incident_S,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Total.Time.Injured", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date"))
-        #288 obs. + 27 vars.
+        #88 obs. + 27 vars.
 
 #Lower body injuriy Binary
 incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -159,11 +161,12 @@ In women's soccer there is a total of 205 lower body injuries, with 4 of them be
 #VOLLEYBALL incident dataset
 Incident_V <- Incident_V %>%                    #220 -> 135 obs.
 filter(Incident.Type=="Injury") %>%
+filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes") %>%
 select(-Result.of.Sport.Participation)
 
 incident_V <- subset(Incident_V,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
-        #135 +23 vars.
+        #52 +23 vars.
 
 #Lower body injury binary
 incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -199,10 +202,11 @@ In womens' volleyball 60 lower body injuries occurred, 10 of them being ACL inju
 #LACROSSE incident dataset 
 Incident_L <- Incident_L %>%                    #139 -> 86 obs.
 filter(Incident.Type=="Injury") %>%
+filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes") %>%
 select(-Result.of.Sport.Participation)
 
-incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
+incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #34obs 
 
 #Lower body injury binary
 incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
@@ -1026,32 +1030,99 @@ Like volleyball strong lead of non-contact injuries then any other type of injur
 2. Dynamo
 -NO PLOTS ATM
 
-```{r}
-#creating a boxplot displaying distribution of relative maximum bilateral mean(different variable) in those who experienced lower body injury vs those that did not
-ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Maximum.Force, y = LB)) + 
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Force vs Lower Body Injury (All Time)',
-       y = 'Did Player Suffer Lower Body Injury',
-       x = 'Maximum Force (N)',
-       caption = 'Womens Basketball Forwards') +
-  theme_bw()
-```
 
 3. Forcedecks 
-
+#Variable Distribution Plots
 ```{r}
-#Basketball distribution of Mean.RSI..Flight.Contact.Time in HJ test 
+#basketball, CMJ test: distribution of max RSI
+ggplot(CMJ_bb, aes(Max.CMJ.RSI.Modified..m.s.)) +
+  labs(title="Distribution of Maximum RSI in CMJ Test",x="RSI", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#HJ TEST: distribution of Mean.RSI..Flight.Contact.Time 
 ggplot(HJ_B, aes(Mean.RSI..Flight.Contact.Time.)) +
   labs(title="Distribution of RSI Flight Contact Time in the Hop Jump Test",x="Average RSI Flight Contact Time", y="Frequency") +
   geom_histogram(fill="#CFB87C")
+
+#IMTP test: distribution of peak vert. force
+ggplot(IMTP_B, aes(Net.Peak.Vertical.Force..N.s.)) +
+  labs(title="Distribution of IMTP Test",x="Peak Vertical Force", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
 ```
 
+```{r}
+#SOCCER, CMJ test: distribution of max RSI 
+ggplot(CMJ_soc, aes(Max.CMJ.RSI.Modified..m.s.)) +
+  labs(title="Distribution of Maximum RSI in CMJ Test",x="RSI", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#HJ TEST: distribution of Mean.RSI..Flight.Contact.Time 
+ggplot(HJ_S, aes(Mean.RSI..Flight.Contact.Time.)) +
+  labs(title="Distribution of RSI Flight Contact Time in the Hop Jump Test",x="Average RSI Flight Contact Time", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#IMTP test: distribution of peak vert. force
+ggplot(IMTP_S, aes(Net.Peak.Vertical.Force..N.s.)) +
+  labs(title="Distribution of IMTP Test",x="Peak Vertical Force", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#SLJ test: distribution  
+ggplot(SLJ_S, aes(Concentric.Impulse..Ns.)) +
+  labs(title="Distribution of Concentric Impulse in SLJ Test",x="Concentric Impulse", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+```
+
+```{r}
+#LACROSSE, CMJ test: distribution of max RSI 
+ggplot(CMJ_lax, aes(Max.CMJ.RSI.Modified..m.s.)) +
+  labs(title="Distribution of Maximum RSI in CMJ Test",x="RSI", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#HJ TEST: distribution of Mean.RSI..Flight.Contact.Time 
+ggplot(HJ_L, aes(Mean.RSI..Flight.Contact.Time.)) +
+  labs(title="Distribution of RSI Flight Contact Time in the Hop Jump Test",x="Average RSI Flight Contact Time", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#IMTP test: distribution of peak vert. force
+ggplot(IMTP_L, aes(Net.Peak.Vertical.Force..N.s.)) +
+  labs(title="Distribution of IMTP Test",x="Peak Vertical Force", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#SLJ test: distribution  
+ggplot(SLJ_L, aes(Concentric.Impulse..Ns.)) +
+  labs(title="Distribution of Concentric Impulse in SLJ Test",x="Concentric Impulse", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+```
+
+```{r}
+#VOLLEYBALL, CMJ test: distribution of max RSI 
+ggplot(CMJ_vb, aes(Max.CMJ.RSI.Modified..m.s.)) +
+  labs(title="Distribution of Maximum RSI in CMJ Test",x="RSI", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#HJ TEST: distribution of Mean.RSI..Flight.Contact.Time 
+ggplot(HJ_V, aes(Mean.RSI..Flight.Contact.Time.)) +
+  labs(title="Distribution of RSI Flight Contact Time in the Hop Jump Test",x="Average RSI Flight Contact Time", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+
+#IMTP test: distribution of peak vert. force
+ggplot(IMTP_V, aes(Net.Peak.Vertical.Force..N.s.)) +
+  labs(title="Distribution of IMTP Test",x="Peak Vertical Force", y="Frequency") +
+  geom_histogram(fill="#CFB87C")
+```
 
 ```{r}
 #basketball incidents + tests 
 B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
 B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
 B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
+```
+
+```{r}
+#BBALL CMJ RSI by LB injury
+ggplot(B_incid_CMJtest,aes(as.factor(x=LB.Injury),y=Max.CMJ.RSI.Modified..m.s., color=LB.Injury))+ 
+  geom_jitter(width=0.2) +
+  geom_point()
 ```
 
 ```{r}
@@ -1096,25 +1167,48 @@ Middle Blocker|Opposite looks like it would fit more into Middle Blocker, Libero
 #creates a correlation matrix of all numerical values
 cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
+#ADD REST FROM SECTION ABOVE
 
 
 ##MERGE DATASETS 
 #incident + performance (nordic + hip), forceframe (multiple tests)
 ```{r}
 #ALL BASKETBALL DATA incident_b(128) performance_B_hip(109) performance_B_nordic (521), CMJ_bb(194), HJ_B(409), IMTP_B (50)
-basketball_merge <- merge(performance_B_nordic,performance_B_hip, by=c('anon_id','Date'), all=TRUE )
-basket_merge <- merge(basketball_merge,incident_b, by=c('anon_id','Date'), all=TRUE )
-bball_merge <- merge(basket_merge,HJ_B, by=c('anon_id','Date'), all=TRUE )
-bb_merge <- merge(bball_merge,CMJ_bb, by=c('anon_id','Date'), all=TRUE )
-bb_merge_full <- merge(bball_merge,IMTP_B, by=c('anon_id','Date'), all=TRUE )
+basketball_merge <- merge(performance_B_nordic,performance_B_hip, by=c('anon_id','Date'), all=TRUE)
+basket_merge <- merge(basketball_merge,incident_b, by=c('anon_id','Date'), all=TRUE)
+bball_merge <- merge(basket_merge,HJ_B, by=c('anon_id','Date'), all=TRUE)
+bb_merge <- merge(bball_merge,CMJ_bb, by=c('anon_id','Date'), all=TRUE)
+bb_merge_full <- merge(bball_merge,IMTP_B, by=c('anon_id','Date'), all=TRUE)  #1092 by 110
 
-#ALL SOCCER DATA
-
-#ALL LACROSSE DATA
-
-#ALL VOLLEYBALL DATA
+#filter out duplicated rows 
 ```
 
+```{r}
+#ALL SOCCER DATA //NEED TO ADD SLJ
+soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
+soc_merge <- merge(soccer_merge,incident_s, by=c('anon_id','Date'), all=TRUE)
+s_merge <- merge(soc_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
+S_merge <- merge(s_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
+soc_merge_full <- merge(S_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)   #213 by 110
+```
+
+```{r}
+#ALL LACROSSE DATA    //NEED TO ADD SLJ
+lacrosse_merge <- merge(performance_L_nordic,performance_L_hip, by=c('anon_id','Date'), all=TRUE)
+lax_merge <- merge(lacrosse_merge,incident_l, by=c('anon_id','Date'), all=TRUE)
+l_merge <- merge(lax_merge,HJ_L, by=c('anon_id','Date'), all=TRUE)
+L_merge <- merge(l_merge,CMJ_lax, by=c('anon_id','Date'), all=TRUE)
+lax_merge_full <- merge(L_merge,IMTP_L, by=c('anon_id','Date'), all=TRUE)   #1390 by 145
+```
+
+```{r}
+#ALL VOLLEYBALL DATA
+soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
+soc_merge <- merge(basketball_merge,incident_s, by=c('anon_id','Date'), all=TRUE)
+s_merge <- merge(basket_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
+S_merge <- merge(bball_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
+soc_merge_full <- merge(bball_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)
+```
 
 
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
