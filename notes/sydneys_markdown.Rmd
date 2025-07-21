@@ -2116,4 +2116,3 @@ ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Ma
   theme_bw()
 ```
 
-
