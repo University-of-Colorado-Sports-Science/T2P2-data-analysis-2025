@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/17/2025
+#LAST UPDATED: 07/21/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -25,28 +25,28 @@ library(readr)
 #Loading Datasets
 ```{r}
 #Womens basketball datasets
-Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
-Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
-Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
-Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
+#Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
+#Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
+#Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
+#Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
 
 #womens soccer datasets
-Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
-Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
-Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
-Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
+#Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
+#Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
+#Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
+#Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
 
 #womens lacrosse datasets
-Incident_L <- read.csv("data-sets/Incident Report WLAX.csv")
-Dynamo_L <- read.csv("data-sets/VALD - Dynamo WLAX.csv")
-Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WLAX.csv")
-Performance_L <- read.csv("data-sets/VALD - Performance Test WLAx (1).csv")
+#Incident_L <- read.csv("data-sets/Incident Report WLAX.csv")
+#Dynamo_L <- read.csv("data-sets/VALD - Dynamo WLAX.csv")
+#Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WLAX.csv")
+#Performance_L <- read.csv("data-sets/VALD - Performance Test WLAx (1).csv")
 
 #womens volleyball datasets 
-Incident_V <- read.csv("data-sets/Incident Report WVB.csv")
-Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
-Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
-Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
+#Incident_V <- read.csv("data-sets/Incident Report WVB.csv")
+#Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
+#Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
+#Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
 
 ```{r}
@@ -70,12 +70,12 @@ filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes")  %>%
 select(-Result.of.Sport.Participation)
 
-incident_B <- subset(Incident_B,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #add,"Injured.Position",
+incident_B <- subset(Incident_B,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.","Total.Time.Injured", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #add,"Injured.Position",
         #53 obs. + 27 vars.
 
 #Lower body injuries 
-lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
-incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
+lower_body <- c("Thigh","Ankle","Lower leg","Knee","Foot","Groin/hip")
+incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
 sum(incident_B$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -115,7 +115,7 @@ incident_b <- incident_b %>%
     str_detect(Sport, "BASKETBALL")~ "Basketball"
   ))
 ```
-In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
+In womens basketball we have 42 total lower body injuries, 1 of those injuries are ACL injuries, and none are HSI injuries.
 
 ```{r}
 #SOCCER INCIDENT dataset
@@ -129,7 +129,7 @@ incident_S <- subset(Incident_S,select=c("anon_id","Date","Sport", "Position", "
         #88 obs. + 27 vars.
 
 #Lower body injuriy Binary
-incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_S$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -155,7 +155,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_s$Length.of.Status <- difftime(incident_s$End.Date, incident_s$Start.of.Status,units=c("days"))
 ```
-In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
+In women's soccer there is a total of 76 lower body injuries, with 1 of them being ACL injuries, and 2 being HSI injuries.
 
 ```{r}
 #VOLLEYBALL incident dataset
@@ -165,11 +165,11 @@ filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes") %>%
 select(-Result.of.Sport.Participation)
 
-incident_V <- subset(Incident_V,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
+incident_V <- subset(Incident_V,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Total.Time.Injured", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
         #52 +23 vars.
 
 #Lower body injury binary
-incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_V$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -196,7 +196,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_v$Length.of.Status <- difftime(incident_v$End.Date, incident_v$Start.of.Status,units=c("days"))
 ```
-In womens' volleyball 60 lower body injuries occurred, 10 of them being ACL injuries, 4 of them being HSI injuries. 
+In womens' volleyball 28 lower body injuries occurred, 4 of them being ACL injuries, 1 of them being HSI injuries. 
 
 ```{r}
 #LACROSSE incident dataset 
@@ -209,7 +209,7 @@ select(-Result.of.Sport.Participation)
 incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #34obs 
 
 #Lower body injury binary
-incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_L$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -236,7 +236,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
 ```
-In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
+In womens lacrosse 31 lower body injuries occurred, 3 being ACL related, 4 being HSI injury related.
 
 2. VALD- Dynamo datasets
 -we need to know the calculations for the asymmetry measures because they seem inconsistent.
@@ -429,7 +429,6 @@ IMTP_B <- Forcedecks_B %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #50 obs & 30 vars
 ```
-
 
 #Forcedecks (VALD) Soccer Data
 ```{r}
@@ -679,6 +678,9 @@ IMTP_L <- Forcedecks_L %>%
 #Forcedecks (VALD) Volleyball Data
 ```{r}
 #1: TEST TYPE=CMJ
+CMJ_V <- Forcedecks_V %>%
+  filter(Test.Type=="CMJ")
+
 CMJ_V <- subset(CMJ_V, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
 "Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
 "Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
@@ -1028,38 +1030,6 @@ ggplot(IMTP_V, aes(Net.Peak.Vertical.Force..N.s.)) +
   geom_histogram(fill="#CFB87C")
 ```
 
-```{r}
-#basketball incidents + tests 
-B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
-B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
-B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
-```
-
-```{r}
-#BBALL CMJ RSI by LB injury
-ggplot(B_incid_CMJtest,aes(as.factor(x=LB.Injury),y=Max.CMJ.RSI.Modified..m.s., color=LB.Injury))+ 
-  geom_jitter(width=0.2) +
-  geom_point()
-```
-
-```{r}
-#soccer incidents + tests 
-S_incid_CMJtest <- merge(incident_s, CMJ_soc, by=c('anon_id'),all=TRUE) #1911 by 63
-S_incid_HJtest <- merge(incident_s, HJ_S, by=c('anon_id'),all=TRUE)    #3200 by 47
-S_incid_IMTPtest <- merge(incident_s, IMTP_S, by=c('anon_id'),all=TRUE) #596 by 57
-S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by 52
-```
-
-```{r}
-#lacrosse incidents + tests
-
-```
-
-```{r}
-# volleyball incidents + tests
-
-```
-
 4. Performance 
 ```{r}
 #summarizes the number of unique athletes per position group
@@ -1210,7 +1180,25 @@ vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #11
 ```
 
 ```{r}
-#when large merge with all sports datasets together to
+#basketball incidents + tests 
+B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
+B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
+B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
+```
+
+```{r}
+#BBALL CMJ RSI by LB injury
+ggplot(B_incid_CMJtest,aes(as.factor(x=LB.Injury),y=Max.CMJ.RSI.Modified..m.s., color=LB.Injury))+ 
+  geom_jitter(width=0.2) +
+  geom_point()
+```
+
+```{r}
+#soccer incidents + tests 
+S_incid_CMJtest <- merge(incident_s, CMJ_soc, by=c('anon_id'),all=TRUE) #1911 by 63
+S_incid_HJtest <- merge(incident_s, HJ_S, by=c('anon_id'),all=TRUE)    #3200 by 47
+S_incid_IMTPtest <- merge(incident_s, IMTP_S, by=c('anon_id'),all=TRUE) #596 by 57
+S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by 52
 ```
 
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
@@ -1219,15 +1207,131 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 -looking for meaningful strength metrics to lower body injury risk
 -create thresholds fir these metrics by each position in each sport
 
+#Q2:What trends in strength do we see across the women’s team sports? 
+a. Soccer, lacrosse, volleyball, basketball.
+
+```{r}
+#merge all incident datasets
+all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
+  select(-c(Incident.Type,Total.Time.Injured.1))
+```
+
+```{r}
+#make all merging datasets the same # if variables 
+CMJ_bb <- CMJ_bb %>%
+  select(-c(Test.Type))
+CMJ_soc <- CMJ_soc %>%
+  select(-c(Test.Type))
+CMJ_lax <- CMJ_lax %>%
+  select(-c(Test.Type))
+```
+
+```{r}
+#create a dataset containing all CMJ test data across all sports
+all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) #%>%
+ # mutate(Thresh = ifelse(Variable >= #, 'Yes', 'No'))
+all_CMJ_incident <- merge(all_incident, all_CMJ,by=c('anon_id'), na.rm=TRUE)
+```
+
+```{r}
+#create a dataset containing all HJ test data across all sports
+all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V)
+  #mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= #, 'Yes', 'No'))
+all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=TRUE)
+```
+
+```{r}
+#create a dataset containing all IMTP test data across all sports
+all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
+all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE)
+```
+
+```{r}
+#create a dataset containing all SLJ test data across all sports
+all_SLJ <- rbind(SLJ_s, SLJ_l) 
+all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)
+```
+
+
+
+1. CMJ + Incident 
+```{r}
+#choose variables thresholds
+library(cutpointr)
+cp <- cutpoint(all_CMJ_incident,Eccentric.Mean.Braking.Force..N, Eccentric.Mean.Braking.Force.Thresh, method="maximize_metric", metric=youden)
+plot(cp)
+```
+
+```{r}
+library(ROCR)
+roc_curve <- roc(all_CMJ_incident, x=Eccentric.Mean.Braking.Force..N, pos_class="Yes", neg_class="No", direction=">")
+plot_roc(roc_curve)
+auc(roc_curve)
+```
+
+
+
+```{r}
+#create threshold 
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh = ifelse(Relative.Concentric.Power.Bilateral >= 0, 'Yes', 'No'))
+
+#creates a table with lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB, all_CMJ_incident$Thresh)
+
+#creates a boxplot of maximum relative bilateral force across the 4 sports
+ggplot(all_CMJ_incident, aes(x = Relative.Concentric.Power.Bilateral, y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Relative Concentric Bilateral Power Across Sports',
+       y = 'Sport',
+       x = 'Maximum Relative Bilateral Force (N / kg)') +
+  theme_bw()
+
+#creates a density plot of hip abduction across the 4 sports
+ggplot(all_CMJ_incident, aes(x = Avg.Add.Max, fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Bilateral Max Adduction Across Sports',
+       x = 'Bilateral Adduction Max (N)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Maximum.Force ~ Sport, data = all_CMJ_incident)
+summary(anova_result)
+
+#alos do mx RSI
+#concentric maximum RFD, eccentric mean braking force 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #All Time
 Will have to look at the position of the players because without looking at position there is no association.
 
-#In Relation to Injury Timelines
+#In Relation to Injury Timelines- 6 months, 3 months aswell?
 Looking 6 months in the past may be way too long need to figure out what window works best depending on which injuries. Also want to discuss if want to group by player and group and condense observations or just leave observations as is. 
 **1. Basketball**
 ```{r}
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
-incident_b <- Incident_B %>%
+incident_bb <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
   select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
@@ -1241,7 +1345,7 @@ incident_b <- Incident_B %>%
 
 ```{r, warning = FALSE}
 #creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
-last_injury_B <- incident_b %>%
+last_injury_B <- incident_bb %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
@@ -1592,35 +1696,9 @@ ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Ma
 ```
 
 
-#Q2:What trends in strength do we see across the women’s team sports? 
-a. Soccer, lacrosse, volleyball, basketball. 
-```{r}
-#create a dataset containing all CMJ test data across all sports
-all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) %>%
- # mutate(Thresh = ifelse(Variable >= #, 'Yes', 'No'))
-```
-
-```{r}
-#create a dataset containing all HJ test data across all sports
-all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
-  #mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= #, 'Yes', 'No'))
-```
-
-```{r}
-#create a dataset containing all IMTP test data across all sports
-all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V) %>%
-```
-
-```{r}
-#create a dataset containing all SLJ test data across all sports
-all_SLJ <- rbind(SLJ_soc, SLJ_L) %>%
-```
 
 
-
-
-
-
+##Q2
 ```{r}
 #creating a dataset containing performance data across all sports
 performance_all_nordic <- rbind(performance_B_nordic, performance_S_nordic, performance_L_nordic, performance_V_nordic) %>%
