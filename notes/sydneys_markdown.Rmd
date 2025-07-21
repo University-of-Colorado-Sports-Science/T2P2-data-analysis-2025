@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/17/2025
+#LAST UPDATED: 07/21/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -25,28 +25,28 @@ library(readr)
 #Loading Datasets
 ```{r}
 #Womens basketball datasets
-Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
-Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
-Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
-Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
+#Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
+#Dynamo_B <- read.csv("data-sets/VALD - Dynamo WBB.csv")
+#Forcedecks_B <- read.csv("data-sets/VALD - ForceDecks WBB.csv")
+#Performance_B <- read.csv("data-sets/VALD - Performance Test WBB.csv")
 
 #womens soccer datasets
-Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
-Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
-Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
-Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
+#Incident_S <- read.csv("data-sets/Incident Report WSOC.csv")
+#Dynamo_S <- read.csv("data-sets/VALD - Dynamo WSOC.csv")
+#Forcedecks_S <- read.csv("data-sets/VALD - ForceDecks WSOC.csv")
+#Performance_S <- read.csv("data-sets/VALD - Performance Test WSOC.csv")
 
 #womens lacrosse datasets
-Incident_L <- read.csv("data-sets/Incident Report WLAX.csv")
-Dynamo_L <- read.csv("data-sets/VALD - Dynamo WLAX.csv")
-Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WLAX.csv")
-Performance_L <- read.csv("data-sets/VALD - Performance Test WLAx (1).csv")
+#Incident_L <- read.csv("data-sets/Incident Report WLAX.csv")
+#Dynamo_L <- read.csv("data-sets/VALD - Dynamo WLAX.csv")
+#Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WLAX.csv")
+#Performance_L <- read.csv("data-sets/VALD - Performance Test WLAx (1).csv")
 
 #womens volleyball datasets 
-Incident_V <- read.csv("data-sets/Incident Report WVB.csv")
-Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
-Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
-Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
+#Incident_V <- read.csv("data-sets/Incident Report WVB.csv")
+#Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
+#Forcedecks_L <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
+#Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
 
 ```{r}
@@ -70,12 +70,12 @@ filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes")  %>%
 select(-Result.of.Sport.Participation)
 
-incident_B <- subset(Incident_B,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #add,"Injured.Position",
+incident_B <- subset(Incident_B,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.","Total.Time.Injured", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis","Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.Position", "Month", "Year","Status","Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #add,"Injured.Position",
         #53 obs. + 27 vars.
 
 #Lower body injuries 
-lower_body <- c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip")
-incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
+lower_body <- c("Thigh","Ankle","Lower leg","Knee","Foot","Groin/hip")
+incident_B$LB.Injury <- ifelse(incident_B$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0) #lower body Injury Binary
 sum(incident_B$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -115,7 +115,7 @@ incident_b <- incident_b %>%
     str_detect(Sport, "BASKETBALL")~ "Basketball"
   ))
 ```
-In womens basketball we have 80 total lower body injuries, 3 of those injuries are ACL injuries, and none are HSI injuries.
+In womens basketball we have 42 total lower body injuries, 1 of those injuries are ACL injuries, and none are HSI injuries.
 
 ```{r}
 #SOCCER INCIDENT dataset
@@ -129,7 +129,7 @@ incident_S <- subset(Incident_S,select=c("anon_id","Date","Sport", "Position", "
         #88 obs. + 27 vars.
 
 #Lower body injuriy Binary
-incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_S$LB.Injury <- ifelse(incident_S$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_S$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -155,7 +155,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_s$Length.of.Status <- difftime(incident_s$End.Date, incident_s$Start.of.Status,units=c("days"))
 ```
-In women's soccer there is a total of 205 lower body injuries, with 4 of them being ACL injuries, and 7 being HSI injuries.
+In women's soccer there is a total of 76 lower body injuries, with 1 of them being ACL injuries, and 2 being HSI injuries.
 
 ```{r}
 #VOLLEYBALL incident dataset
@@ -165,11 +165,11 @@ filter(Status %in% c("Out", "As Tolerated")) %>%
 filter(Result.of.Sport.Participation=="Yes") %>%
 select(-Result.of.Sport.Participation)
 
-incident_V <- subset(Incident_V,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
+incident_V <- subset(Incident_V,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Total.Time.Injured", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism","Injured.While.", "Month", "Year","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))
         #52 +23 vars.
 
 #Lower body injury binary
-incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_V$LB.Injury <- ifelse(incident_V$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_V$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -196,7 +196,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_v$Length.of.Status <- difftime(incident_v$End.Date, incident_v$Start.of.Status,units=c("days"))
 ```
-In womens' volleyball 60 lower body injuries occurred, 10 of them being ACL injuries, 4 of them being HSI injuries. 
+In womens' volleyball 28 lower body injuries occurred, 4 of them being ACL injuries, 1 of them being HSI injuries. 
 
 ```{r}
 #LACROSSE incident dataset 
@@ -209,7 +209,7 @@ select(-Result.of.Sport.Participation)
 incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #34obs 
 
 #Lower body injury binary
-incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower Leg", "Knee", "Foot", "Groin/hip"),1,0)
+incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
 sum(incident_L$LB.Injury)
 
 #ACL injury (most intense LB injury)
@@ -236,7 +236,7 @@ mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
 #create a length of status variable (Out, limited,as tolerated, full go)
 incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
 ```
-In womens lacrosse 64 lower body injuries occurred, 8 being ACL related, 8 being HSI injury related.
+In womens lacrosse 31 lower body injuries occurred, 3 being ACL related, 4 being HSI injury related.
 
 2. VALD- Dynamo datasets
 -we need to know the calculations for the asymmetry measures because they seem inconsistent.
@@ -429,7 +429,6 @@ IMTP_B <- Forcedecks_B %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #50 obs & 30 vars
 ```
-
 
 #Forcedecks (VALD) Soccer Data
 ```{r}
@@ -679,6 +678,9 @@ IMTP_L <- Forcedecks_L %>%
 #Forcedecks (VALD) Volleyball Data
 ```{r}
 #1: TEST TYPE=CMJ
+CMJ_V <- Forcedecks_V %>%
+  filter(Test.Type=="CMJ")
+
 CMJ_V <- subset(CMJ_V, select = c("anon_id","Date","Position","Test.Type","Weight..kg.","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.","Concentric.Maximum.RFD..N.s.","Concentric.Maximum.RFD..Right...N.s.","Concentric.Maximum.RFD..Left...N.s.","Eccentric.Mean.Braking.Force..N.", "Max.Jump.Height..cm.", "Max.Concentric.Peak.Force..N.", "Relative.Concentric.Power.Bilateral",
 "Relative.Eccentric.Power.Bilateral","Max.Peak.Power...BM", "Max.Eccentric.Peak.Force..N.",
 "Max.RSI.Modified.VALD","Max.Concentric.RPD..N.s.", "Max.Concentric.Peak.Velocity..m.s.", "Max.Eccentric.Peak.Velocity..m.s.", "Max.Peak.Landing.Force..N.", "MAX.Concentric.Peak.Power..W.","Max.CMJ.Jump.Height..cm.",
@@ -949,7 +951,7 @@ Like volleyball strong lead of non-contact injuries then any other type of injur
 -NO PLOTS ATM
 
 3. Forcedecks 
-#Variable Distribution Plots
+Variable Distribution Plots
 ```{r}
 #basketball, CMJ test: distribution of max RSI
 ggplot(CMJ_bb, aes(Max.CMJ.RSI.Modified..m.s.)) +
@@ -1028,38 +1030,6 @@ ggplot(IMTP_V, aes(Net.Peak.Vertical.Force..N.s.)) +
   geom_histogram(fill="#CFB87C")
 ```
 
-```{r}
-#basketball incidents + tests 
-B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
-B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
-B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
-```
-
-```{r}
-#BBALL CMJ RSI by LB injury
-ggplot(B_incid_CMJtest,aes(as.factor(x=LB.Injury),y=Max.CMJ.RSI.Modified..m.s., color=LB.Injury))+ 
-  geom_jitter(width=0.2) +
-  geom_point()
-```
-
-```{r}
-#soccer incidents + tests 
-S_incid_CMJtest <- merge(incident_s, CMJ_soc, by=c('anon_id'),all=TRUE) #1911 by 63
-S_incid_HJtest <- merge(incident_s, HJ_S, by=c('anon_id'),all=TRUE)    #3200 by 47
-S_incid_IMTPtest <- merge(incident_s, IMTP_S, by=c('anon_id'),all=TRUE) #596 by 57
-S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by 52
-```
-
-```{r}
-#lacrosse incidents + tests
-
-```
-
-```{r}
-# volleyball incidents + tests
-
-```
-
 4. Performance 
 ```{r}
 #summarizes the number of unique athletes per position group
@@ -1067,7 +1037,6 @@ performance_B_nordic %>%
   group_by(Position) %>%
   summarize(`Unique Athletes` = n_distinct(anon_id))
 ```
-
 There are only 4 unique centers represented with most of the observations being ID_40 and ID_51, ID_15 and ID_30 each only have one observation. Forwards only have 8 unique players but the split between these players is more even with the exception of ID_24 who only has one observation. Guards has 10 unique players with ID_55 making up a large proportion of these observations and ID_5, ID_54, and ID_63 only being represented once. 
 
 ```{r}
@@ -1160,15 +1129,12 @@ Middle Blocker|Opposite looks like it would fit more into Middle Blocker, Libero
 #creates a correlation matrix of all numerical values
 cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
-#ADD REST FROM SECTION ABOVE
-
-
-
 
 
 ##MERGE DATASETS 
-#incident + performance (nordic + hip), forceframe (multiple tests)
+-incident + performance (nordic + hip), forceframe (multiple tests)
 -dynamo not to be added 
+These are grouped by all data of each sport. Do not know if will use as we want to compare metrics across sports. Keep Just in case.
 ```{r}
 #ALL BASKETBALL DATA incident_b(128) performance_B_hip(109) performance_B_nordic (521), CMJ_bb(194), HJ_B(409), IMTP_B (50)
 basketball_merge <- merge(performance_B_nordic,performance_B_hip, by=c('anon_id','Date'), all=TRUE)
@@ -1179,7 +1145,6 @@ bb_merge_full <- merge(bball_merge,IMTP_B, by=c('anon_id','Date'), all=TRUE)  #1
 
 #filter out duplicated rows 
 ```
-
 ```{r}
 #ALL SOCCER DATA 
 soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
@@ -1188,9 +1153,6 @@ s_merge <- merge(soc_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
 S_merge <- merge(s_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
 soc_merge_full <- merge(S_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)   #1233 by 168
 soccer_merge_full <- merge(soc_merge_full, SLJ_s, by=c('anon_id','Date'), all=TRUE)  #1233 by 168
-```
-
-```{r}
 #ALL LACROSSE DATA    
 lacrosse_merge <- merge(performance_L_nordic,performance_L_hip, by=c('anon_id','Date'), all=TRUE)
 lax_merge <- merge(lacrosse_merge,incident_l, by=c('anon_id','Date'), all=TRUE)
@@ -1198,36 +1160,599 @@ l_merge <- merge(lax_merge,HJ_L, by=c('anon_id','Date'), all=TRUE)
 L_merge <- merge(l_merge,CMJ_lax, by=c('anon_id','Date'), all=TRUE)
 lax_merge_full <- merge(L_merge,IMTP_L, by=c('anon_id','Date'), all=TRUE)   #1390 by 145
 lacrosse_merge_full <- merge(lax_merge_full, SLJ_L, by=c('anon_id','Date'), all=TRUE) 
-```
-
-```{r}
 #ALL VOLLEYBALL DATA
 volleyball_merge <- merge(performance_V_nordic,performance_V_hip, by=c('anon_id','Date'), all=TRUE)
 vball_merge <- merge(volleyball_merge,incident_v, by=c('anon_id','Date'), all=TRUE)
 vb_merge <- merge(vball_merge,HJ_V, by=c('anon_id','Date'), all=TRUE)
 v_merge <- merge(vb_merge,CMJ_vb, by=c('anon_id','Date'), all=TRUE)
 vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #1140 by 143
+#basketball incidents + tests 
+B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
+B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
+B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
+
+#soccer incidents + tests 
+S_incid_CMJtest <- merge(incident_s, CMJ_soc, by=c('anon_id'),all=TRUE) #1911 by 63
+S_incid_HJtest <- merge(incident_s, HJ_S, by=c('anon_id'),all=TRUE)    #3200 by 47
+S_incid_IMTPtest <- merge(incident_s, IMTP_S, by=c('anon_id'),all=TRUE) #596 by 57
+S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by 52
 ```
 
-```{r}
-#when large merge with all sports datasets together to
-```
 
+
+##RESEARCH QUESTIONS*******
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
 a. For example, one of our strength coaches uses 5 times body weight (kg) in Newtons for hamstring strength as a cutoff for injury risk. Is this supported by our data? 
 
 -looking for meaningful strength metrics to lower body injury risk
--create thresholds fir these metrics by each position in each sport
+-create thresholds for these metrics by each position in each sport
+```{r}
+#GIVEN 
+#confirm or deny threshold of 5x bodyweight (kg) in N for hamstring strength for injury risk
+performance_all_nordic <-  performance_all_nordic %>%
+  mutate(strength_ratio=Maximum.Nordic.Bilateral.Mean/Athlete.Bodyweight..kg., #hamstring strength/weight
+         above_threshold=ifelse(strength_ratio>= 5, 1,0))
+
+performance_all_nordic_incident <- merge(performance_all_nordic, all_incident, by='anon_id',na.rm=TRUE)
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=performance_all_nordic_incident, family="binomial")
+summary(model)
+```
+Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk
+
+```
+
+#Q2:What trends in strength do we see across the women’s team sports? 
+a. Soccer, lacrosse, volleyball, basketball.
+```{r}
+#make a categorical variable including each injury to plot together  
+#1= LB.Injury, 2=HSI, 3=ACL
+all_incident$InjuryType <- with(all_incident, 
+                          ifelse(ACL == 1, "ACL",
+                          ifelse(HSI == 1, "HSI",
+                          ifelse(LB.Injury  == 1, "Lower body", NA))))
+
+#convert to factor 
+all_incident$InjuryType <- factor(all_incident$InjuryType, levels = c("Lower body", "HSI", "ACL"))
+
+ #now in data only keep those 3 injuries
+all_incid <- all_incident[all_incident$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),]
+```
+
+```{r}
+#plot count on y axis, then x= each sport , fill each injury 
+  ggplot(data=all_incid, aes(x=Sport, fill=InjuryType))+
+  geom_bar(na.rm=TRUE) +
+  scale_fill_manual(values=c("Lower body"='#CFB87C',
+                             "HSI"='white',
+                             "ACL"='black')) +
+  labs(title="The Number of Each Injury by Sport",
+       y="Count",
+       x="Sport",
+       fill="Injury Type") +
+  theme_minimal()
+```
+
+```{r}
+#recurrence of injury plot 
+ggplot(all_incid, aes(x=Sport, fill=Recurrence.of.Injury))+
+  geom_bar(na.rm=TRUE) +
+  scale_fill_manual(values=c("New Injury/Illness"='#CFB87C',
+                             "First recurrence"='black',
+                             "Multiple recurrence"='white',
+                             "Pre-existing injury/illness"= 'grey')) +
+  labs(title="The Number of Each Injury Recurrence by Sport",
+       y="Count",
+       x="Sport",
+       fill="Recurrence") +
+  theme_minimal()
+```
+As seen in the past project with the football data, the main type of injury is a new injury, which makes it much harder to prevent or predict.
+
+
+Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
+```{r}
+#merge all incident datasets
+all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
+  select(-c(Incident.Type,Total.Time.Injured.1))
+
+#make all merging datasets the same # if variables 
+CMJ_bb <- CMJ_bb %>%
+  select(-c(Test.Type))
+CMJ_soc <- CMJ_soc %>%
+  select(-c(Test.Type))
+CMJ_lax <- CMJ_lax %>%
+  select(-c(Test.Type))
+```
+
+```{r}
+#create a dataset containing all CMJ test data across all sports
+all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) 
+all_CMJ_incident <- merge(all_incident, all_CMJ,by=c('anon_id'), na.rm=TRUE) #3471 v 67
+
+#create a dataset containing all HJ test data across all sports
+all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V)
+all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=TRUE)  #5597 v 47
+
+#create a dataset containing all IMTP test data across all sports
+all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
+all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 57
+
+#create a dataset containing all SLJ test data across all sports
+all_SLJ <- rbind(SLJ_s, SLJ_l) 
+all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)  #461 v 52
+```
+
+1. CMJ + Incident 
+#start w/ 0.5 as threshold // GOAL: LOOKING FOR A MORE OPTIMAL/MEANINGFUL ONE
+```{r}
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh = ifelse(Relative.Concentric.Power.Bilateral >= 0.5, 'Yes', 'No'))
+
+#table with lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB.Injury, all_CMJ_incident$Thresh)
+
+#boxplot
+ggplot(all_CMJ_incident, aes(x = Relative.Concentric.Power.Bilateral, y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Relative Concentric Bilateral Power Across Sports',
+       y = 'Sport',
+       x = 'Relative Concentric Bilateral Power') +
+  theme_bw()
+```
+
+```{r}
+#density plot 
+ggplot(all_CMJ_incident, aes(x = Eccentric.Concentric.Mean.Force.Ratio, fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Eccentric Concentric Mean Force Ratio Across Sports',
+       x = 'Eccentric Concentric Mean Force Ratio',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Eccentric.Concentric.Mean.Force.Ratio ~ Sport, data = all_CMJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh0 = ifelse(Max.Jump.Height..cm. >= 0.5, 'Yes', 'No'))
+
+#table with lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB.Injury, all_CMJ_incident$Thresh0)
+
+#boxplot 
+ggplot(all_CMJ_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of Maximum Jump Height Across Sports',
+       y = 'Sport',
+       x = 'Maximum Jump Height (cm)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_CMJ_incident, aes(x = Max.Jump.Height..cm., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Maximum Jump Height (cm) Across Sports',
+       x = 'Maximum Jump Height (cm)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Max.Jump.Height..cm. ~ Sport, data = all_CMJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh1 = ifelse(Concentric.Maximum.RFD..N.s. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB.Injury, all_CMJ_incident$Thresh1)
+
+#boxplot 
+ggplot(all_CMJ_incident, aes(x = Concentric.Maximum.RFD..N.s., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Maximum Concentric RFD Across Sports',
+       y = 'Sport',
+       x = 'Maximum Concentric RFD (N/s)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_CMJ_incident, aes(x = Concentric.Maximum.RFD..N.s., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Maximum Concentric RFD (N/s) Across Sports',
+       x = 'Maximum Concentric RFD (N/s)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Concentric.Maximum.RFD..N.s. ~ Sport, data = all_CMJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh2 = ifelse(Eccentric.Mean.Braking.Force..N. >= 0.5, 'Yes', 'No'))
+
+#table with lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB.Injury, all_CMJ_incident$Thresh2)
+
+#boxplot 
+ggplot(all_CMJ_incident, aes(x = Eccentric.Mean.Braking.Force..N., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Mean Eccentric Braking Force Across Sports',
+       y = 'Sport',
+       x = 'Mean Eccentric Braking Force (N)') +
+  theme_bw()
+```
+
+```{r}
+all_CMJ_incident <- all_CMJ_incident %>%
+ mutate(Thresh3 = ifelse(Max.RSI.Modified.VALD>= 0.5, 'Yes', 'No'))
+
+#table with lower body injury on left and whether the observation is above/below threshold
+table(all_CMJ_incident$LB.Injury, all_CMJ_incident$Thresh3)
+
+#boxplot 
+ggplot(all_CMJ_incident, aes(x = Max.RSI.Modified.VALD, y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Maximum RSI from VALD Across Sports',
+       y = 'Sport',
+       x = 'Maximum RSI from VALD') +
+  theme_bw()
+```
+
+2. Hop Jump + Incident 
+```{r}
+all_hopjump_incident <- all_hopjump_incident %>%
+ mutate(Thresh = ifelse(Max.Jump.Height..cm. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_hopjump_incident$LB.Injury, all_hopjump_incident$Thresh)
+
+#boxplot 
+ggplot(all_hopjump_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Maximum Jump Height (cm) Across Sports',
+       y = 'Sport',
+       x = 'Maximum Jump Height (cm)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_hopjump_incident, aes(x = Max.Jump.Height..cm., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Maximum Jump Height (cm) Across Sports',
+       x = 'Maximum Jump Height (cm)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Max.Jump.Height..cm. ~ Sport, data = all_hopjump_incident)
+summary(anova_result)
+```
+
+```{r}
+all_hopjump_incident <- all_hopjump_incident %>%
+ mutate(Thresh1 = ifelse(Mean.RSI..Flight.Contact.Time. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_hopjump_incident$LB.Injury, all_hopjump_incident$Thresh1)
+
+#boxplot 
+ggplot(all_hopjump_incident, aes(x = Mean.RSI..Flight.Contact.Time., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Average RSI Flight Contact Time Across Sports',
+       y = 'Sport',
+       x = 'Average RSI Flight Contact Time') +
+  theme_bw()
+
+#density plot 
+ggplot(all_hopjump_incident, aes(x = Mean.RSI..Flight.Contact.Time., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of Average RSI Flight Contact Time Across Sports',
+       x = 'Average RSI Flight Contact Time',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Mean.RSI..Flight.Contact.Time. ~ Sport, data = all_hopjump_incident)
+summary(anova_result)
+```
+
+```{r}
+all_hopjump_incident <- all_hopjump_incident %>%
+ mutate(Thresh2 = ifelse(Best.Contact.Time..ms. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_hopjump_incident$LB.Injury, all_hopjump_incident$Thresh2)
+
+#boxplot 
+ggplot(all_hopjump_incident, aes(x = Best.Contact.Time..ms., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Best Contact Time (m/s) Across Sports',
+       y = 'Sport',
+       x = 'Best Contact Time (m/s)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_hopjump_incident, aes(x = Best.Contact.Time..ms., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Best Contact Time (m/s) Across Sports',
+       x = 'Best Contact Time (m/s)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Best.Contact.Time..ms. ~ Sport, data = all_hopjump_incident)
+summary(anova_result)
+```
+
+3. Isometric Mid Thigh Pull (IMTP) + Incident 
+```{r}
+#could use this or Peak.Vertical.Force..N. or Net.Peak.Vertical.Force..N.s.
+all_IMTP_incident <- all_IMTP_incident %>%
+ mutate(Thresh = ifelse(Peak.Vertical.Force...BM..N.kg. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_IMTP_incident$LB.Injury, all_IMTP_incident$Thresh)
+
+#boxplot 
+ggplot(all_IMTP_incident, aes(x = Peak.Vertical.Force...BM..N.kg., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Peak Vertical Force Across Sports',
+       y = 'Sport',
+       x = 'Peak Vertical Force (BM N/kg)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_IMTP_incident, aes(x = Peak.Vertical.Force...BM..N.kg., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Peak Vertical Force Across Sports',
+       x = 'Peak Vertical Force (BM N/kg)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Peak.Vertical.Force...BM..N.kg. ~ Sport, data = all_IMTP_incident)
+summary(anova_result)
+```
+
+```{r}
+all_IMTP_incident <- all_IMTP_incident %>%
+ mutate(Thresh1 = ifelse(RFD...200ms..N.s. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_IMTP_incident$LB.Injury, all_IMTP_incident$Thresh1)
+
+#boxplot 
+ggplot(all_IMTP_incident, aes(x = RFD...200ms..N.s., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Rate of Force Development at 200ms Across Sports',
+       y = 'Sport',
+       x = 'Rate of Force Development at 200ms (N/s)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_IMTP_incident, aes(x = RFD...200ms..N.s., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Rate of Force Development at 200ms Across Sports',
+       x = 'Rate of Force Development at 200ms (N/s)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(RFD...200ms..N.s. ~ Sport, data = all_IMTP_incident)
+summary(anova_result)
+```
+
+```{r}
+all_IMTP_incident <- all_IMTP_incident %>%
+ mutate(Thresh2 = ifelse(Force.at.200ms...BM..N.kg. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_IMTP_incident$LB.Injury, all_IMTP_incident$Thresh2)
+
+#boxplot 
+ggplot(all_IMTP_incident, aes(x = Force.at.200ms...BM..N.kg., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Force at 200ms Across Sports',
+       y = 'Sport',
+       x = 'Force at 200ms BM (N/kg)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_IMTP_incident, aes(x = Force.at.200ms...BM..N.kg., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Force at 200ms Across Sports',
+       x = 'Force at 200ms BM (N/kg)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Force.at.200ms...BM..N.kg. ~ Sport, data = all_IMTP_incident)
+summary(anova_result)
+```
+
+4. Single Leg Jump + Incident 
+```{r}
+all_SLJ_incident <- all_SLJ_incident %>%
+ mutate(Thresh = ifelse(Max.Jump.Height..cm. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh)
+
+#boxplot 
+ggplot(all_SLJ_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Maximum Jump Height Across Sports',
+       y = 'Sport',
+       x = 'Maximum Jump Height (cm)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_SLJ_incident, aes(x = Max.Jump.Height..cm., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Maximum Jump Height Across Sports',
+       x = 'Maximum Jump Height (cm)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Max.Jump.Height..cm. ~ Sport, data = all_SLJ_incident)
+summary(anova_result)
+```
+
+```{r}
+#CHOOSE TO KEEP THIS ONE OR ONE DIRECTLY ABOVE 
+all_SLJ_incident <- all_SLJ_incident %>%
+ mutate(Thresh1 = ifelse(Jump.Height..Flight.Time...cm. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh1)
+
+#boxplot 
+ggplot(all_SLJ_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Jump Height Flight Time Across Sports',
+       y = 'Sport',
+       x = 'Jump Height Flight Time (cm)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_SLJ_incident, aes(x = Jump.Height..Flight.Time...cm., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Jump Height Flight Time  Across Sports',
+       x = 'Jump Height Flight Time (cm)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Jump.Height..Flight.Time...cm. ~ Sport, data = all_SLJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_SLJ_incident <- all_SLJ_incident %>%
+ mutate(Thresh2 = ifelse(Landing.RFD..N.s. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh2)
+
+#boxplot 
+ggplot(all_SLJ_incident, aes(x = Landing.RFD..N.s., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Landing Rate of Force Development Across Sports',
+       y = 'Sport',
+       x= 'Landing Rate of Force Development (N/s)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_SLJ_incident, aes(x = Landing.RFD..N.s., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Landing Rate of Force Development Across Sports',
+       x = 'Landing Rate of Force Development (N/s)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Landing.RFD..N.s. ~ Sport, data = all_SLJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_SLJ_incident <- all_SLJ_incident %>%
+ mutate(Thresh2 = ifelse(Max.Concentric.Peak.Force..N. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh2)
+
+#boxplot 
+ggplot(all_SLJ_incident, aes(x = Max.Concentric.Peak.Force..N., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Maximum Concentric Peak Force Across Sports',
+       y = 'Sport',
+       x= 'Maximum Concentric Peak Force (N)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_SLJ_incident, aes(x = Max.Concentric.Peak.Force..N., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Maximum Concentric Peak Force Across Sports',
+       x = 'Maximum Concentric Peak Force (N)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Max.Concentric.Peak.Force..N. ~ Sport, data = all_SLJ_incident)
+summary(anova_result)
+```
+
+```{r}
+all_SLJ_incident <- all_SLJ_incident %>%
+ mutate(Thresh3 = ifelse(Concentric.Impulse..Ns. >= 0.5, 'Yes', 'No'))
+
+#table w/ lower body injury on left and whether the observation is above/below threshold
+table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh3)
+
+#boxplot 
+ggplot(all_SLJ_incident, aes(x = Max.Concentric.Peak.Force..N., y = Sport)) +
+  geom_boxplot(fill = '#CFB87C', color = 'black') + 
+  labs(title = 'Distribution of the Concentric Impulse Across Sports',
+       y = 'Sport',
+       x= 'Concentric Impulse (N/s)') +
+  theme_bw()
+
+#density plot 
+ggplot(all_SLJ_incident, aes(x = Concentric.Impulse..Ns., fill = Sport)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', 'white', 'black','yellow')) +
+  labs(title = 'Distribution of the Concentric Impulse  Across Sports',
+       x = 'Concentric Impulse (N/s)',
+       y = 'Density') +
+  theme_bw()
+
+#anova test for differences
+anova_result <- aov(Concentric.Impulse..Ns. ~ Sport, data = all_SLJ_incident)
+summary(anova_result)
+```
+
+
+
+
+
+
 
 #All Time
 Will have to look at the position of the players because without looking at position there is no association.
 
-#In Relation to Injury Timelines
+#In Relation to Injury Timelines- 6 months, 3 months aswell?
 Looking 6 months in the past may be way too long need to figure out what window works best depending on which injuries. Also want to discuss if want to group by player and group and condense observations or just leave observations as is. 
 **1. Basketball**
 ```{r}
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
-incident_b <- Incident_B %>%
+incident_bb <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
   select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
@@ -1241,7 +1766,7 @@ incident_b <- Incident_B %>%
 
 ```{r, warning = FALSE}
 #creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
-last_injury_B <- incident_b %>%
+last_injury_B <- incident_bb %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
@@ -1589,96 +2114,5 @@ ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Ma
        x = 'Maximum Force (N)',
        caption = 'Womens Basketball Forwards') +
   theme_bw()
-```
-
-
-#Q2:What trends in strength do we see across the women’s team sports? 
-a. Soccer, lacrosse, volleyball, basketball. 
-```{r}
-#create a dataset containing all CMJ test data across all sports
-all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) %>%
- # mutate(Thresh = ifelse(Variable >= #, 'Yes', 'No'))
-```
-
-```{r}
-#create a dataset containing all HJ test data across all sports
-all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
-  #mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= #, 'Yes', 'No'))
-```
-
-```{r}
-#create a dataset containing all IMTP test data across all sports
-all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V) %>%
-```
-
-```{r}
-#create a dataset containing all SLJ test data across all sports
-all_SLJ <- rbind(SLJ_soc, SLJ_L) %>%
-```
-
-
-
-
-
-
-```{r}
-#creating a dataset containing performance data across all sports
-performance_all_nordic <- rbind(performance_B_nordic, performance_S_nordic, performance_L_nordic, performance_V_nordic) %>%
-  mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= 5, 'Yes', 'No'))
-
-#creating a dataset containing performance hip data across all sports
-performance_all_hip <- rbind(performance_B_hip, performance_S_hip, performance_L_hip, performance_V_hip) %>%
-  mutate(Avg.Abd.Mean = (Hip.Abd.Left.MEAN + Hip.Abd.Right.MEAN) / 2,
-         Avg.Add.Mean = (Hip.Add.Left.MEAN + Hip.Add.Right.MEAN) / 2,
-         Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
-         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2,
-         Relative.Abd.Mean = Avg.Abd.Mean / Athlete.Bodyweight..kg.,
-         Relative.Add.Mean = Avg.Add.Mean / Athlete.Bodyweight..kg.,
-         Relative.Abd.Max = Avg.Abd.Max / Athlete.Bodyweight..kg.,
-         Relative.Add.Max = Avg.Add.Max / Athlete.Bodyweight..kg.)
-```
-
-```{r}
-#creates a table with lower body injury on left and whether the observation had higher relative bilateral strength above 5 on top
-table(performance_all_nordic$LB, performance_all_nordic$Thresh)
-```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the 4 sports
-ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Sport)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Sports',
-       y = 'Sport',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-
-```{r}
-#creates a density plot of hip abduction across the 4 sports
-ggplot(performance_all_hip, aes(x = Avg.Add.Max, fill = Sport)) +
-  geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Bilateral Max Adduction Across Sports',
-       x = 'Bilateral Adduction Max (N)',
-       y = 'Density') +
-  theme_bw()
-```
-
-```{r}
-ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, color = Sport, fill = Sport)) + 
-  geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Relative Maximum Nordic Force Across Sports',
-       x = 'Relative Maximum Force (N / kg)',
-       y = 'Density') +
-  theme_bw()
-```
-
-```{r}
-#anova test for differences
-anova_result <- aov(Maximum.Force ~ Sport, data = performance_all_nordic)
-summary(anova_result)
 ```
 
