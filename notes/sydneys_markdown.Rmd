@@ -1237,6 +1237,23 @@ all_incid <- all_incident[all_incident$Body.Part. %in% c("Thigh", "Ankle", "Lowe
   theme_minimal()
 ```
 
+```{r}
+#recurrence of injury plot 
+ggplot(all_incid, aes(x=Sport, fill=Recurrence.of.Injury))+
+  geom_bar(na.rm=TRUE) +
+  scale_fill_manual(values=c("New Injury/Illness"='#CFB87C',
+                             "First recurrence"='black',
+                             "Multiple recurrence"='white',
+                             "Pre-existing injury/illness"= 'grey')) +
+  labs(title="The Number of Each Injury Recurrence by Sport",
+       y="Count",
+       x="Sport",
+       fill="Recurrence") +
+  theme_minimal()
+```
+As seen in the past project with the football data, the main type of injury is a new injury, which makes it much harder to prevent or predict.
+
+
 Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
 ```{r}
 #merge all incident datasets
