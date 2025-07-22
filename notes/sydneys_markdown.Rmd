@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/21/2025
+#LAST UPDATED: 07/22/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -425,7 +425,7 @@ HJ_B <- Forcedecks_B %>%
 #3: TEST TYPE= IMTP
 IMTP_B <- Forcedecks_B %>%
   filter(Test.Type=="IMTP") %>% #162 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #50 obs & 30 vars
 ```
@@ -547,9 +547,9 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 #4 TEST TYPE- IMTP
 IMTP_S <- Forcedecks_S %>%
   filter(Test.Type=="IMTP") %>%   #200 obs 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  na.omit()   #68 obs & 30 vars
+  na.omit()   #68 obs & 32 vars
 ```
 
 #Forcedecks (VALD) Lacrosse Data
@@ -670,9 +670,9 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 #ballistic, explosive, concurrent 
 IMTP_L <- Forcedecks_L %>%
   filter(Test.Type=="IMTP") %>%   #100 obs 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  na.omit()   #33 obs & 30 vars
+  na.omit()   #33 obs & 32 vars
 ```
 
 #Forcedecks (VALD) Volleyball Data
@@ -743,11 +743,9 @@ CMJ_vb <- CMJ_v %>%
 #2:TEST TYPE= IMTP
 IMTP_V <- Forcedecks_V %>%
   filter(Test.Type=="IMTP") %>% #1241
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  na.omit()   #249 obs & 30 vars
-
-#Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym…Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym…Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym…Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym…Ns.
+  na.omit()   #249 obs & 32 vars
 ```
 
 ```{r}
@@ -1227,7 +1225,7 @@ all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=T
 
 #create a dataset containing all IMTP test data across all sports
 all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
-all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 57
+all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 60
 
 #create a dataset containing all SLJ test data across all sports
 all_SLJ <- rbind(SLJ_s, SLJ_l) 
@@ -1956,7 +1954,7 @@ cp <- cutpointr(all_SLJ_incident, Concentric.Impulse..Ns. , LB.Injury, method=ma
 plot(cp)
 summary(cp)
 ```
-For Concentric Impulse the optimal cutpoint is 19.223 with a AUC of 0.6147, sensitivity of 0.3625 and specificity of 0.8889.
+For Concentric Impulse the optimal cutpoint is 123.136 with a AUC of 0.5224, sensitivity of 0.1954 and specificity of 0.9306.
 
 ```{r}
 library(pROC)
@@ -1979,30 +1977,17 @@ points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87
 text(1 - best_coords["specificity"], best_coords["sensitivity"],
      labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
 ```
-For Concentric Impulse the optimal threshold is 24.953 with a AUC of 0.3853 , sensitivity of 0.9897172 and specificity of 0.02777778.   
+For Concentric Impulse the optimal threshold is 94.20375 with a AUC of 0.4776 , sensitivity of 0.1285347 and specificity of 0.9305556.    123.136
 
 ```{r}
 #look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
 all_SLJ_incident <-  all_SLJ_incident %>%
-  mutate(above_threshold=ifelse(Concentric.Impulse..Ns.>= 19.223, 1,0))#add newfound threshold
+  mutate(above_threshold=ifelse(Concentric.Impulse..Ns.>= 123.136, 1,0))#add newfound threshold
 
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -22,8 +22,6 @@ library(lubridate)
 
 
 # Loading Datasets
-
-
 ```{r}
 #Womens basketball datasets
 Incident_B <- read.csv("data-sets/Incident Report WBB.csv")
@@ -49,7 +47,6 @@ Dynamo_V <- read.csv("data-sets/VALD - Dynamo WVB.csv")
 Forcedecks_V <- read.csv("data-sets/VALD - ForceDecks WVB.csv")
 Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 ```
-
 
 # Data Cleaning
 1. Incident Datasets
@@ -230,12 +227,9 @@ incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of
 In womens lacrosse 31 lower body injuries occurred, 3 being ACL related, 4 being HSI injury related.
 
 ## Dynamo Dataset
-
-
 We need to know the calculations for the asymmetry measures because they seem inconsistent.
 
 ### 1. Basketball
-
 ```{r}
 #selects variables of interest
 dynamo_B <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -249,11 +243,9 @@ dynamo_B <- dynamo_B %>%
          )) %>%
   na.omit()
 ```
-
 19 total observations, 3 with NA values in Knee.Ex.Max.Force..N..Asymmetry.
 
 ### 2. Soccer
-
 ```{r, warning = FALSE}
 #selects variables of interest
 dynamo_S <- subset(Dynamo_S, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -287,11 +279,9 @@ dynamo_S <- dynamo_S %>%
          Knee.Ex.Max.Rate.of.Force.Development.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns. / Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.)), 1),
          Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry = round(100 * (1 - (Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns. / Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.)), 1))
 ```
-
 Only 1 observation, none of the asymmetry statistics are summarized. 
 
 ### 3. Lacrosse
-
 ```{r}
 #selects variables of interest
 dynamo_L <- subset(Dynamo_L, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -305,11 +295,9 @@ dynamo_L <- dynamo_L %>%
          )) %>%
   na.omit()
 ```
-
 38 total observations, 23 with NA values in Knee.Ex.Max.Force..N..Asymmetry.
 
 ### 4. Volleyball
-
 ```{r}
 #selects variables of interest
 dynamo_V <- subset(Dynamo_V, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -323,7 +311,6 @@ dynamo_V <- dynamo_V %>%
          )) %>%
   na.omit()
 ```
-
 Only has 4 observations from one player.
 
 3. VALD- Forcedecks datasets
@@ -410,9 +397,9 @@ HJ_B <- Forcedecks_B %>%
 #3: TEST TYPE= IMTP
 IMTP_B <- Forcedecks_B %>%
   filter(Test.Type=="IMTP") %>% #162 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  na.omit()   #50 obs & 30 vars
+  na.omit()   #50 obs & 32 vars
 ```
 
 #Forcedecks (VALD) Soccer Data
@@ -532,7 +519,7 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 #4 TEST TYPE- IMTP
 IMTP_S <- Forcedecks_S %>%
   filter(Test.Type=="IMTP") %>%   #200 obs 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #68 obs & 30 vars
 ```
@@ -655,7 +642,7 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 #ballistic, explosive, concurrent 
 IMTP_L <- Forcedecks_L %>%
   filter(Test.Type=="IMTP") %>%   #100 obs 
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #33 obs & 30 vars
 ```
@@ -728,11 +715,9 @@ CMJ_vb <- CMJ_v %>%
 #2:TEST TYPE= IMTP
 IMTP_V <- Forcedecks_V %>%
   filter(Test.Type=="IMTP") %>% #1241
-  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right") %>%
+  select("anon_id", "Date", "Baseline.Force..N.","Baseline.Force..Asym...N.", "Peak.Vertical.Force..N.", "Peak.Vertical.Force...BM..N.kg.", "Peak.Vertical.Force..Asym...N.", "RFD...50ms..N.s.", "RFD...50ms..Asym...N.s.", "RFD...100ms..N.s.", "RFD...100ms..Asym...N.s.", "RFD...150ms..N.s.", "RFD...150ms..Asym...N.s.", "RFD...200ms..N.s.", "RFD...200ms..Asym...N.s.", "Net.Peak.Vertical.Force..N.s.", "Net.Peak.Vertical.Force..Asym...N.s.", "Force.at.200ms...BM..N.kg.", "Eccentric.Asymmetry", "Concentric.Asymmetry","MEAN.Eccentric.Mean.Force.Left", "MEAN.Eccentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Left", "MEAN.Concentric.Mean.Force.Right", "MEAN.Concentric.Mean.Force.Asym", "MEAN.Peak.Landing.Force.Asym",  "MEAN.Relative.Peak.Power", "MEAN.CMJ.Concentric.Force", "MEAN.Peak.Landing.Force.Left", "MEAN.Peak.Landing.Force.Right", "DSI", "DSI.Bucket") %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit()   #249 obs & 30 vars
-
-#Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym…Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym…Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym…Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym…Ns.
 ```
 
 ```{r}
@@ -1233,6 +1218,798 @@ model <- glm(LB.Injury~ above_threshold,data=performance_all_nordic_incident, fa
 summary(model)
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
+
+Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
+```{r}
+#merge all incident datasets
+all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
+  select(-c(Incident.Type,Total.Time.Injured.1))
+
+#make all merging datasets the same # if variables 
+CMJ_bb <- CMJ_bb %>%
+  select(-c(Test.Type))
+CMJ_soc <- CMJ_soc %>%
+  select(-c(Test.Type))
+CMJ_lax <- CMJ_lax %>%
+  select(-c(Test.Type))
+```
+
+```{r}
+#create a dataset containing all CMJ test data across all sports
+all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) 
+all_CMJ_incident <- merge(all_incident, all_CMJ,by=c('anon_id'), na.rm=TRUE) #3471 v 67
+
+#create a dataset containing all HJ test data across all sports
+all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V)
+all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=TRUE)  #5597 v 47
+
+#create a dataset containing all IMTP test data across all sports
+all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
+all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 57
+
+#create a dataset containing all SLJ test data across all sports
+all_SLJ <- rbind(SLJ_s, SLJ_l) 
+all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)  #461 v 52
+```
+
+##FINDING MY OWN THRESHOLDS
+#CMJ
+1. Relative.Concentric.Power.Bilateral
+```{r}
+#way 1 to find threshold
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+#Error: "Relative.Concentric.Power.Bilateral", :method should be a function
+cp <- cutpointr(all_CMJ_incident, Relative.Concentric.Power.Bilateral, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Relative Concentric Power Bilateral the optimal cutpoint is 10.3 with a AUC of 0.5028, sensitivity of 0.721 and specificity of 0.3191.
+
+```{r}
+#way 2 to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Relative.Concentric.Power.Bilateral, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Relative Concentric Bilateral Power")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Relative Concentric Power Bilateral the optimal threshold was 10.85, with an AUC of 0.4972, sensitivity 0.5625726, and specificity 0.4707865.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Relative.Concentric.Power.Bilateral>= 10.3, 1,0))#add newfound threshold 
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+2. Eccentric.Concentric.Mean.Force.Ratio
+```{r}
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+cp <- cutpointr(all_CMJ_incident, Eccentric.Concentric.Mean.Force.Ratio , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Eccentric Concentric Mean Force Ratio the optimal cutpoint is 53.5025 with a AUC of 0.4938, sensitivity of 0.49398 and specificity of 0.6202.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Eccentric.Concentric.Mean.Force.Ratio , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Eccentric Concentric Mean Force Ratio")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Eccentric Concentric Mean Force Ratio the optimal threshold is 47.7145 with a AUC of 0.5062, sensitivity of 0.1666021 and specificity of 0.9157303.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Eccentric.Concentric.Mean.Force.Ratio>= 47.7145, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+3. Maximum Jump Height
+```{r}
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+cp <- cutpointr(all_CMJ_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum Jump Height the optimal cutpoint is 41.379 with a AUC of 0.5063, sensitivity of 0.0957 and specificity of 09618.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Max.Jump.Height..cm. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum Jump Height")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum Jump Height the optimal threshold is 24.6 with a AUC of 0.4937, sensitivity of 0.07245254 and specificity of 0.9595506.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Max.Jump.Height..cm.>= 41.379, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+4. Maximum Concentric RFD
+```{r}
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+cp <- cutpointr(all_CMJ_incident, Max.Concentric.RPD..N.s. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum Concentric RFD the optimal cutpoint is 15784.34 with a AUC of 0.527, sensitivity of 0.6034 and specificity of 0.4963.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Max.Concentric.RPD..N.s. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum Concentric RFD")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum Concentric RFD the optimal threshold is 15780.66 with a AUC of 0.527, sensitivity of 0.496313 and specificity of 0.6033708.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Max.Concentric.RPD..N.s.>= 15784.34, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+5. Eccentric Mean Braking Force
+```{r}
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+cp <- cutpointr(all_CMJ_incident, Eccentric.Mean.Braking.Force..N. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Eccentric Mean Braking Force the optimal cutpoint is 783.517 with a AUC of 0.5989, sensitivity of 0.7146 and specificity of 0.4572.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Eccentric.Mean.Braking.Force..N. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Eccentric Mean Braking Force")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Eccentric Mean Braking Force the optimal threshold is 783.4963 with a AUC of 0.5989, sensitivity of 0.4571871 and specificity of 0.7146067.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Eccentric.Mean.Braking.Force..N.>= 783.517, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+6. Maximum VALD RSI
+```{r}
+library(cutpointr)
+all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
+
+cp <- cutpointr(all_CMJ_incident, Max.RSI.Modified.VALD , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum VALD RSI the optimal cutpoint is 0.4 with a AUC of 0.5263, sensitivity of 0.6562 and specificity of 0.406.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
+               predictor = all_CMJ_incident$Max.RSI.Modified.VALD , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum VALD RSI")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum VALD RSI the optimal threshold is 0.3995 with a AUC of 0.5263, sensitivity of 0.4060442 and specificity of 0.6561798.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_CMJ_incident <-  all_CMJ_incident %>%
+  mutate(above_threshold=ifelse(Max.RSI.Modified.VALD>= 0.3995, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
+summary(model)
+```
+
+
+#Hop Jump
+1.Maximum Jump Height
+```{r}
+library(cutpointr)
+all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
+
+cp <- cutpointr(all_hopjump_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum Jump Height the optimal cutpoint is 25.489 with a AUC of 0.533, sensitivity of 0.5263 and specificity of 0.5342.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
+               predictor = all_hopjump_incident$Max.Jump.Height..cm. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum Jump Height")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum Jump Height the optimal threshold is 25.4335 with a AUC of 0.533, sensitivity of 0.5341823 and specificity of 0.5263158.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_hopjump_incident <-  all_hopjump_incident %>%
+  mutate(above_threshold=ifelse(Max.Jump.Height..cm.>= 25.489, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
+summary(model)
+```
+
+2.Mean RSI Flight Contact Time
+```{r}
+library(cutpointr)
+all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
+
+cp <- cutpointr(all_hopjump_incident, Mean.RSI..Flight.Contact.Time. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Mean RSI Flight Contact Time the optimal cutpoint is 2.441 with a AUC of 0.5086, sensitivity of 0.4017 and specificity of 0.6387.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
+               predictor = all_hopjump_incident$Mean.RSI..Flight.Contact.Time. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Mean RSI Flight Contact Time")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Mean RSI Flight Contact Time the optimal threshold is 1.8 with a AUC of 0.4914, sensitivity of 0.1646559 and specificity of 0.8599465.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_hopjump_incident <-  all_hopjump_incident %>%
+  mutate(above_threshold=ifelse(Mean.RSI..Flight.Contact.Time.>= 2.441, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
+summary(model)
+```
+
+3.Best Contact Time
+```{r}
+library(cutpointr)
+all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
+
+cp <- cutpointr(all_hopjump_incident, Best.Contact.Time..ms. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Best Contact Time the optimal cutpoint is 0.184 with a AUC of 0.5442, sensitivity of 0.6949 and specificity of 0.4227.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
+               predictor = all_hopjump_incident$Best.Contact.Time..ms. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Best Contact Time")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Best Contact Time the optimal threshold is 0.1835 with a AUC of 0.5442 , sensitivity of 0.4226988 and specificity of 0.6949153.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_hopjump_incident <-  all_hopjump_incident %>%
+  mutate(above_threshold=ifelse(Best.Contact.Time..ms.>= 0.184, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
+summary(model)
+```
+
+#Isometric Mid Thigh Pull
+1. Peak Vertical Force
+```{r}
+library(cutpointr)
+all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
+
+cp <- cutpointr(all_IMTP_incident, Peak.Vertical.Force...BM..N.kg. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+ForPeak Vertical Force the optimal cutpoint is 30.813 with a AUC of 0.5116, sensitivity of 0.8214 and specificity of 0.2596.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
+               predictor = all_IMTP_incident$Peak.Vertical.Force...BM..N.kg. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Peak Vertical Force")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Peak Vertical Forc the optimal threshold is 30.5455 with a AUC of 0.5116 , sensitivity of 0.2596463 and specificity of 0.8214286.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_IMTP_incident <-  all_IMTP_incident %>%
+  mutate(above_threshold=ifelse(Peak.Vertical.Force...BM..N.kg.>= 30.813, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
+summary(model)
+```
+
+2.RPD at 200ms
+```{r}
+library(cutpointr)
+all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
+
+cp <- cutpointr(all_IMTP_incident, RFD...200ms..N.s. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For RPD at 200ms the optimal cutpoint is 4032.637 with a AUC of 0.5208, sensitivity of 0.3006 and specificity of 0.7792.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
+               predictor = all_IMTP_incident$RFD...200ms..N.s. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - RPD at 200ms")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For RPD at 200ms the optimal threshold is 8357.859 with a AUC of 0.4792 , sensitivity of 0.9766881 and specificity of 0.07792208.  
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_IMTP_incident <-  all_IMTP_incident %>%
+  mutate(above_threshold=ifelse(RFD...200ms..N.s.>= 8357.859, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
+summary(model)
+```
+
+3. Force at 200ms
+```{r}
+library(cutpointr)
+all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
+
+cp <- cutpointr(all_IMTP_incident, Force.at.200ms...BM..N.kg. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Force at 200ms the optimal cutpoint is 24.254 with a AUC of 0.507, sensitivity of 0.3714 and specificity of 0.7078.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
+               predictor = all_IMTP_incident$Force.at.200ms...BM..N.kg. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Force at 200ms")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Force at 200ms the optimal threshold is 17.6205 with a AUC of 0.493 , sensitivity of 0.312701 and specificity of 0.7402597.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_IMTP_incident <-  all_IMTP_incident %>%
+  mutate(above_threshold=ifelse(Force.at.200ms...BM..N.kg.>= 24.254, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
+summary(model)
+```
+
+#Single Leg Jump
+1.Maximum Jump Height
+```{r}
+library(cutpointr)
+all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
+
+cp <- cutpointr(all_SLJ_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum Jump Height the optimal cutpoint is 19.223 with a AUC of 0.6147, sensitivity of 0.3625 and specificity of 0.8889.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
+               predictor = all_SLJ_incident$Max.Jump.Height..cm. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum Jump Height")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum Jump Height the optimal threshold is 24.953 with a AUC of 0.3853 , sensitivity of 0.9897172 and specificity of 0.02777778.   
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_SLJ_incident <-  all_SLJ_incident %>%
+  mutate(above_threshold=ifelse(Max.Jump.Height..cm.>= 19.223, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
+summary(model)
+```
+
+2.Jump Height Flight Time
+```{r}
+library(cutpointr)
+all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
+
+cp <- cutpointr(all_SLJ_incident, Jump.Height..Flight.Time...cm. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Jump Height Flight Time the optimal cutpoint is 17.027 with a AUC of 0.5904, sensitivity of 0.3265 and specificity of 0.875.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
+               predictor = all_SLJ_incident$Jump.Height..Flight.Time...cm. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Jump Height Flight Time")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Jump Height Flight Time the optimal threshold is 23.40658 with a AUC of 0.4096 , sensitivity of 0.9897172 and specificity of 0.02777778.     17.027
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_SLJ_incident <-  all_SLJ_incident %>%
+  mutate(above_threshold=ifelse(Jump.Height..Flight.Time...cm.>= 17.027, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
+summary(model)
+```
+
+3.Landing RPD
+```{r}
+library(cutpointr)
+all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
+
+cp <- cutpointr(all_SLJ_incident, Landing.RFD..N.s. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Landing RPD the optimal cutpoint is =31061.16 with a AUC of 0.5347, sensitivity of 0.4987 and specificity of 0.6806.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
+               predictor = all_SLJ_incident$Landing.RFD..N.s. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Landing RPD")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Landing RPD the optimal threshold is 24395.01 with a AUC of 0.4653 , sensitivity of 0.1491003 and specificity of 0.9444444.     
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_SLJ_incident <-  all_SLJ_incident %>%
+  mutate(above_threshold=ifelse(Landing.RFD..N.s.>= 31061.16, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
+summary(model)
+```
+
+4.Maximum Concentric Peak Force
+```{r}
+library(cutpointr)
+all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
+
+cp <- cutpointr(all_SLJ_incident, Max.Concentric.Peak.Force..N. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Maximum Concentric Peak Force the optimal cutpoint is 1243.319 with a AUC of 0.546, sensitivity of 0.8149 and specificity of 0.3611.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
+               predictor = all_SLJ_incident$Max.Concentric.Peak.Force..N. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum Concentric Peak Force")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Maximum Concentric Peak Force the optimal threshold is 1678.094 with a AUC of 0.454 , sensitivity of 0.8843188 and specificity of 0.1944444.     
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_SLJ_incident <-  all_SLJ_incident %>%
+  mutate(above_threshold=ifelse(Max.Concentric.Peak.Force..N.>= 1243.319, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
+summary(model)
+```
+
+5.Concentric Impulse
+```{r}
+library(cutpointr)
+all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
+
+cp <- cutpointr(all_SLJ_incident, Concentric.Impulse..Ns. , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Concentric Impulse the optimal cutpoint is 123.136 with a AUC of 0.5224, sensitivity of 0.1954 and specificity of 0.9306.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
+               predictor = all_SLJ_incident$Concentric.Impulse..Ns. , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Concentric Impulse")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For Concentric Impulse the optimal threshold is 94.20375 with a AUC of 0.4776 , sensitivity of 0.1285347 and specificity of 0.9305556.    123.136
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_SLJ_incident <-  all_SLJ_incident %>%
+  mutate(above_threshold=ifelse(Concentric.Impulse..Ns.>= 123.136, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
+summary(model)
+```
+
+
 
 
 ## All Time
@@ -2254,42 +3031,7 @@ ggplot(all_incid, aes(x=Sport, fill=Recurrence.of.Injury))+
 ```
 As seen in the past project with the football data, the main type of injury is a new injury, which makes it much harder to prevent or predict.
 
-
-Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
-```{r}
-#merge all incident datasets
-all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
-  select(-c(Incident.Type,Total.Time.Injured.1))
-
-#make all merging datasets the same # if variables 
-CMJ_bb <- CMJ_bb %>%
-  select(-c(Test.Type))
-CMJ_soc <- CMJ_soc %>%
-  select(-c(Test.Type))
-CMJ_lax <- CMJ_lax %>%
-  select(-c(Test.Type))
-```
-
-```{r}
-#create a dataset containing all CMJ test data across all sports
-all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) 
-all_CMJ_incident <- merge(all_incident, all_CMJ,by=c('anon_id'), na.rm=TRUE) #3471 v 67
-
-#create a dataset containing all HJ test data across all sports
-all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V)
-all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=TRUE)  #5597 v 47
-
-#create a dataset containing all IMTP test data across all sports
-all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
-all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 57
-
-#create a dataset containing all SLJ test data across all sports
-all_SLJ <- rbind(SLJ_s, SLJ_l) 
-all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)  #461 v 52
-```
-
 1. CMJ + Incident 
-#start w/ 0.5 as threshold // GOAL: LOOKING FOR A MORE OPTIMAL/MEANINGFUL ONE
 ```{r}
 all_CMJ_incident <- all_CMJ_incident %>%
  mutate(Thresh = ifelse(Relative.Concentric.Power.Bilateral >= 0.5, 'Yes', 'No'))
@@ -2631,7 +3373,7 @@ all_SLJ_incident <- all_SLJ_incident %>%
 table(all_SLJ_incident$LB.Injury, all_SLJ_incident$Thresh1)
 
 #boxplot 
-ggplot(all_SLJ_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
+ggplot(all_SLJ_incident, aes(x = Jump.Height..Flight.Time...cm., y = Sport)) +
   geom_boxplot(fill = '#CFB87C', color = 'black') + 
   labs(title = 'Distribution of the Jump Height Flight Time Across Sports',
        y = 'Sport',
