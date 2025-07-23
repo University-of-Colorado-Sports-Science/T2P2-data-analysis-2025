@@ -8,7 +8,7 @@ output: html_notebook
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/22/2025
+#LAST UPDATED: 07/23/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -1788,6 +1788,50 @@ model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial
 summary(model)
 ```
 
+4. DSI
+```{r}
+library(cutpointr)
+all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
+
+cp <- cutpointr(all_IMTP_incident, DSI , LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For DSI the optimal cutpoint is 0.59 with a AUC of 0.5005, sensitivity of 0.2291 and specificity of 0.8571.
+
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
+               predictor = all_IMTP_incident$DSI , #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Dynamic Strength Index")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+For DSI the optimal threshold is 0.235 with a AUC of 0.4995 , sensitivity of 0.2580386 and specificity of 0.8116883.
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_IMTP_incident <-  all_IMTP_incident %>%
+  mutate(above_threshold=ifelse(DSI>= 0.59, 1,0))#add newfound threshold
+
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
+summary(model)
+```
+
 #Single Leg Jump
 1.Maximum Jump Height
 ```{r}
@@ -3028,8 +3072,20 @@ ggplot(all_incid, aes(x=Sport, fill=Recurrence.of.Injury))+
        x="Sport",
        fill="Recurrence") +
   theme_minimal()
+
+#DSI bucket plot 
+ggplot(all_IMTP_incident, aes(x=Sport, fill=DSI.Bucket))+
+  geom_bar(na.rm=TRUE) +
+  scale_fill_manual(values=c("Maximal Strength Training"='black',
+                             "Concurrent Training"='white',
+                             "Ballistic Strength Training"='#CFB87C')) +
+  labs(title="The Number of Each DSI Bucket by Sport",
+       y="Count",
+       x="Sport",
+       fill="DSI Bucket") +
+  theme_minimal()
 ```
-As seen in the past project with the football data, the main type of injury is a new injury, which makes it much harder to prevent or predict.
+As seen in the past project with the football data, the main type of injury is a new injury, which makes it much harder to prevent or predict. Across all of the womens sports their focus is on ballistic strength training which emphasizes speed and explosiveness.
 
 1. CMJ + Incident 
 ```{r}
