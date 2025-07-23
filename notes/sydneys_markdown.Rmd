@@ -2159,6 +2159,14 @@ ggplot(all_CMJ_incident, aes(x = Relative.Concentric.Power.Bilateral, y = Sport)
        y = 'Sport',
        x = 'Relative Concentric Bilateral Power') +
   theme_bw()
+
+ggplot(all_CMJ_incident, aes(x = Relative.Concentric.Power.Bilateral, y = Date.x)) +
+  geom_point() + 
+  scale_y_date(limits = as.Date(c('2023-04-08', '2025-04-18'))) +
+  labs(title = 'Distribution of Relative Concentric Bilateral Power Across Sports',
+       y = 'Dates',
+       x = 'Relative Concentric Bilateral Power') +
+  theme_bw()
 ```
 
 ```{r}
@@ -2196,8 +2204,8 @@ ggplot(all_CMJ_incident, aes(x = Max.Jump.Height..cm., y = Sport)) +
 #density plot 
 ggplot(all_CMJ_incident, aes(x = Max.Jump.Height..cm., fill = Sport)) +
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  #scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  #scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   labs(title = 'Distribution of Maximum Jump Height (cm) Across Sports',
        x = 'Maximum Jump Height (cm)',
        y = 'Density') +
@@ -2226,8 +2234,8 @@ ggplot(all_CMJ_incident, aes(x = Concentric.Maximum.RFD..N.s., y = Sport)) +
 #density plot 
 ggplot(all_CMJ_incident, aes(x = Concentric.Maximum.RFD..N.s., fill = Sport)) +
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  #scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  #scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   labs(title = 'Distribution of Maximum Concentric RFD (N/s) Across Sports',
        x = 'Maximum Concentric RFD (N/s)',
        y = 'Density') +
@@ -2236,6 +2244,7 @@ ggplot(all_CMJ_incident, aes(x = Concentric.Maximum.RFD..N.s., fill = Sport)) +
 #anova test for differences
 anova_result <- aov(Concentric.Maximum.RFD..N.s. ~ Sport, data = all_CMJ_incident)
 summary(anova_result)
+max(all_CMJ_incident$Concentric.Maximum.RFD..N.s.)
 ```
 
 ```{r}
@@ -2268,6 +2277,8 @@ ggplot(all_CMJ_incident, aes(x = Max.RSI.Modified.VALD, y = Sport)) +
        y = 'Sport',
        x = 'Maximum RSI from VALD') +
   theme_bw()
+max(all_CMJ_incident$Max.RSI.Modified.VALD)
+min(all_CMJ_incident$Max.RSI.Modified.VALD)
 ```
 
 2. Hop Jump + Incident 
@@ -2299,6 +2310,8 @@ ggplot(all_hopjump_incident, aes(x = Max.Jump.Height..cm., fill = Sport)) +
 #anova test for differences
 anova_result <- aov(Max.Jump.Height..cm. ~ Sport, data = all_hopjump_incident)
 summary(anova_result)
+mean(all_hopjump_incident$Max.Jump.Height..cm.)
+max(all_hopjump_incident$Max.Jump.Height..cm.)
 ```
 
 ```{r}
@@ -2328,6 +2341,7 @@ ggplot(all_hopjump_incident, aes(x = Mean.RSI..Flight.Contact.Time., fill = Spor
 #anova test for differences
 anova_result <- aov(Mean.RSI..Flight.Contact.Time. ~ Sport, data = all_hopjump_incident)
 summary(anova_result)
+max(all_hopjump_incident$Mean.RSI..Flight.Contact.Time)
 ```
 
 ```{r}
@@ -2446,6 +2460,7 @@ ggplot(all_IMTP_incident, aes(x = Force.at.200ms...BM..N.kg., fill = Sport)) +
 #anova test for differences
 anova_result <- aov(Force.at.200ms...BM..N.kg. ~ Sport, data = all_IMTP_incident)
 summary(anova_result)
+max(all_IMTP_incident$Force.at.200ms...BM..N.kg.)
 ```
 
 4. Single Leg Jump + Incident 
@@ -2535,6 +2550,7 @@ ggplot(all_SLJ_incident, aes(x = Landing.RFD..N.s., fill = Sport)) +
 #anova test for differences
 anova_result <- aov(Landing.RFD..N.s. ~ Sport, data = all_SLJ_incident)
 summary(anova_result)
+max(all_SLJ_incident$Landing.RFD..N.s.)
 ```
 
 ```{r}
