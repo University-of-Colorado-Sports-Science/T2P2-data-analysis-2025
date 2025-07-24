@@ -742,21 +742,24 @@ performance_B <- subset(Performance_B, select = c('anon_id', 'Date', 'Athlete.Bo
     str_detect(Sport.Position, "Primary:") ~ 'Forward',
     TRUE ~ Sport.Position
   )) %>%
-  select(-Sport.Position)
+  dplyr::select(-Sport.Position)
 
 #makes the date column a 'date' object for later and omits NA values for nordic dataset
 performance_B_nordic <- performance_B %>%
-  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  dplyr::select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Force.Diff.Norm = (Maximum.Nordic.Bilateral.Mean - 308) / 308,
+         Imbalance.Diff.Norm = (Nordic.MEAN.Imbalance - 6.3) / 6.3,
          Sport = 'Basketball') %>%
   na.omit()
 
 #makes the date column a 'date' object for later and omits NA values for hip dataset
 performance_B_hip <- performance_B %>%
-  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  dplyr::select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Abd.Add.Ratio.Diff.Norm = (Bilateral.Hip.Abduction.Adduction.Ratio - 1) / 1,
          Sport = 'Basketball') %>%
   na.omit()
 ```
@@ -773,21 +776,24 @@ performance_S <- subset(Performance_S, select = c('anon_id', 'Date', 'Athlete.Bo
     Sport.Position == '' ~ 'None',
     TRUE ~ Sport.Position
   )) %>%
-  select(-Sport.Position)
+  dplyr::select(-Sport.Position)
 
 #makes the date column a 'date' object for later and omits NA values for nordic dataset
 performance_S_nordic <- performance_S %>%
-  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  dplyr::select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Force.Diff.Norm = (Maximum.Nordic.Bilateral.Mean - 298) / 298,
+         Imbalance.Diff.Norm = (Nordic.MEAN.Imbalance - 6.5) / 6.5,
          Sport = 'Soccer') %>%
   na.omit()
 
 #makes the date column a 'date' object for later and omits NA values for hip dataset
 performance_S_hip <- performance_S %>%
-  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  dplyr::select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Abd.Add.Ratio.Diff.Norm = (Bilateral.Hip.Abduction.Adduction.Ratio - 0.98) / 0.98,
          Sport = 'Soccer') %>%
   na.omit()
 ```
@@ -804,24 +810,28 @@ performance_L <- subset(Performance_L, select = c('anon_id', 'Date', 'Athlete.Bo
     Sport.Position == '' ~ 'None',
     TRUE ~ Sport.Position
   )) %>%
-  select(-Sport.Position)
+  dplyr::select(-Sport.Position)
 
 #makes the date column a 'date' object for later and omits NA values for nordic dataset
 performance_L_nordic <- performance_L %>%
-  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  dplyr::select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Force.Diff.Norm = (Maximum.Nordic.Bilateral.Mean - 277) / 277,
+         Imbalance.Diff.Norm = (Nordic.MEAN.Imbalance - 5.8) / 5.8,
          Sport = 'Lacrosse') %>%
   na.omit()
 
 #makes the date column a 'date' object for later and omits NA values for hip dataset
 performance_L_hip <- performance_L %>%
-  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  dplyr::select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Abd.Add.Ratio.Diff.Norm = (Bilateral.Hip.Abduction.Adduction.Ratio - 0.99) / 0.99,
          Sport = 'Lacrosse') %>%
   na.omit()
 ```
+
 Also does not contain any information about positional norms so there are no percent differences from norm. 855 observations with z-scores. 929 observations without z-scores. 810 observations if bodyweight is included.  
 
 Hip dataset contains 100 observations with bodyweight included and excluded. 
@@ -834,21 +844,24 @@ performance_V <- subset(Performance_V, select = c('anon_id', 'Date', 'Athlete.Bo
     Sport.Position == '' ~ 'None',
     TRUE ~ Sport.Position
   )) %>%
-  select(-Sport.Position)
+  dplyr::select(-Sport.Position)
 
 #makes the date column a 'date' object for later and omits NA values for nordic dataset
 performance_V_nordic <- performance_V %>%
-  select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
+  dplyr::select(-c('Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Force.Diff.Norm = (Maximum.Nordic.Bilateral.Mean - 287) / 287,
+         Imbalance.Diff.Norm = (Nordic.MEAN.Imbalance - 6.2) / 6.2,
          Sport = 'Volleyball') %>%
   na.omit()
 
 #makes the date column a 'date' object for later and omits NA values for hip dataset
 performance_V_hip <- performance_V %>%
-  select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
+  dplyr::select(-c('Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean')) %>%
   filter(Athlete.Bodyweight..kg. > 5) %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         Abd.Add.Ratio.Diff.Norm = (Bilateral.Hip.Abduction.Adduction.Ratio - 1.04) / 1.04,
          Sport = 'Volleyball') %>%
   na.omit()
 ```
@@ -858,7 +871,6 @@ There are a lot of observations with the player playing multiple positions, need
 Does have positional norm information but a lot of missing values. Only 33 observations with percent difference norm and z-scores. 356 observations with only z-scores. 393 observations without either percent difference norm or z-scores. 325 observations if bodyweight is included.
 
 Hip data contains 180 observations with bodyweight included, 220 otherwise.
-
 
 
 ### Exploratory Plots
