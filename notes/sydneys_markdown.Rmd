@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/23/2025
+#LAST UPDATED: 07/24/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -1164,16 +1164,6 @@ vball_merge <- merge(volleyball_merge,incident_v, by=c('anon_id','Date'), all=TR
 vb_merge <- merge(vball_merge,HJ_V, by=c('anon_id','Date'), all=TRUE)
 v_merge <- merge(vb_merge,CMJ_vb, by=c('anon_id','Date'), all=TRUE)
 vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #1140 by 143
-#basketball incidents + tests 
-B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
-B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
-B_incid_IMTPtest <- merge(incident_b, IMTP_B, by=c('anon_id'),all=TRUE) #315 by 56
-
-#soccer incidents + tests 
-S_incid_CMJtest <- merge(incident_s, CMJ_soc, by=c('anon_id'),all=TRUE) #1911 by 63
-S_incid_HJtest <- merge(incident_s, HJ_S, by=c('anon_id'),all=TRUE)    #3200 by 47
-S_incid_IMTPtest <- merge(incident_s, IMTP_S, by=c('anon_id'),all=TRUE) #596 by 57
-S_incid_SLJtest <- merge(incident_s, SLJ_S, by=c('anon_id'),all=TRUE)   #3723 by 52
 ```
 
 
@@ -2038,6 +2028,50 @@ summary(model)
 #Q2:What trends in strength do we see across the women’s team sports? 
 a. Soccer, lacrosse, volleyball, basketball.
 ```{r}
+#reload datasets
+Incident_B <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WBB.csv")
+Incident_S <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WSOC.csv")
+Incident_L <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WLAX.csv")
+Incident_V <- read.csv("~/T2P2-data-analysis-2025/data-sets/Incident Report WVB.csv")
+```
+
+```{r}
+# count # of what type of injuries in each sport 
+count_categories <- function(data, column_name) {
+  data |>
+    dplyr::count(.data[[column_name]]) |>
+    dplyr::arrange(desc(n))
+}
+Incident_B <- Incident_B %>%
+  filter(Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"))
+Incident_S <- Incident_S %>%
+  filter(Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"))
+Incident_V <- Incident_V %>%
+  filter(Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"))
+Incident_L <- Incident_L %>%
+  filter(Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"))
+
+#convert to character
+Incident_B$Body.Part. <- as.character(Incident_B$Body.Part.)
+Incident_S$Body.Part. <- as.character(Incident_S$Body.Part.)
+Incident_V$Body.Part. <- as.character(Incident_V$Body.Part.)
+Incident_L$Body.Part. <- as.character(Incident_L$Body.Part.)
+
+count_categories(Incident_B, "Body.Part.")
+count_categories(Incident_S, "Body.Part.")
+count_categories(Incident_V, "Body.Part.")
+count_categories(Incident_L, "Body.Part.")
+```
+
+```{r}
+#count of all different test types by sport 
+count_categories(Forcedecks_B, "Test.Type")
+count_categories(Forcedecks_S, "Test.Type")
+count_categories(Forcedecks_V, "Test.Type")
+count_categories(Forcedecks_L, "Test.Type")
+```
+
+```{r}
 #make a categorical variable including each injury to plot together  
 #1= LB.Injury, 2=HSI, 3=ACL
 all_incident$InjuryType <- with(all_incident, 
@@ -2107,43 +2141,137 @@ ggplot(all_incident, aes(x = Start.of.Status, y = End.Date, color=Recurrence.of.
   theme_bw()
 ```
 
+#Individual Athletes Injuries Over time
 ```{r}
-#sort Status only to out
-injury_cumulative <- all_incident %>%
+#filter lacrosse incident data for plots 
+injury_l_cumulative <- incident_l %>%
   filter(Status=="Out") %>%
   arrange(anon_id, Start.of.Status) %>%
   group_by(anon_id) %>%
-  mutate(CumulativeInjuries = row_number())  # counts rows per player chronologically
+  mutate(CumulativeInjuries = row_number()) 
 
-
-ggplot(injury_cumulative, aes(x =CumulativeInjuries , y = Start.of.Status, color = as.factor(anon_id))) +
+#line graph 
+ggplot(injury_l_cumulative,aes(x =CumulativeInjuries ,y = Start.of.Status,color = as.factor(anon_id))) +
   geom_line() +
-  labs(x = "Cumulative Injuries", y = "Injury Time Period", color = "Player ID") +
+  labs(x = "Cumulative Injuries per Athlete", y = "Injury Time Period", color = "Athlete ID") +
+  #xlim(0,5)+
+  scale_x_continuous(breaks=c(0,1,2,3,4,5))+
   theme_minimal()
+ggplot(injury_l_cumulative,aes(x =Start.of.Status ,y = CumulativeInjuries,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete", color = "Athlete ID") +
+ # ylim(0,5)+
+  scale_y_continuous(breaks=c(0,1,2,3,4,5))+
+  theme_minimal()
+#figure out how to get it to start at 0 and show other lines
 
-#new
-ggplot(injury_cumulative, aes(y = as.factor(anon_id))) +
-  geom_segment(aes(x = Start.of.Status, xend = End.Date, yend = as.factor(anon_id),
-                   color = Recurrence.of.Injury), size = 2) +
-  labs(x = "Date", y = "Player ID", color = "Recurrence Type") +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+#bar plot 
+ggplot(injury_l_cumulative, aes(x = Start.of.Status, y = CumulativeInjuries, group = anon_id)) +
+  geom_segment(aes(xend = End.Date, yend = CumulativeInjuries, color = anon_id), size = 2) +
+  geom_point(aes(color = anon_id)) +
+  scale_y_continuous(breaks=c(0,1,2,3,4,5))+
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete") +
+  theme_minimal()
+```
 
-#newer
-injury_data <- all_incident %>%
+```{r}
+#filter basketball incident data for plots 
+injury_b_cumulative <- incident_b %>%
   filter(Status=="Out") %>%
   arrange(anon_id, Start.of.Status) %>%
   group_by(anon_id) %>%
-  mutate(CumulativeInjuries = row_number())
+  mutate(CumulativeInjuries = row_number()) 
 
-ggplot(injury_data, aes(x = Start.of.Status, y = CumulativeInjuries, group = anon_id)) +
-  geom_segment(aes(xend = End.Date, yend = CumulativeInjuries, color = Recurrence.of.Injury), size = 2) +
-  geom_point(aes(color = Recurrence.of.Injury)) +
-  labs(x = "Date", y = "Cumulative Injuries", color = "Recurrence Type") +
+#line graph 
+ggplot(injury_b_cumulative,aes(x =CumulativeInjuries ,y = Start.of.Status,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Cumulative Injuries per Athlete", y = "Injury Time Period", color = "Athlete ID") +
+   scale_x_continuous(breaks=c(0,1,2,3,4,5))+
+  #xlim(0,5)+
+  theme_minimal()
+ggplot(injury_b_cumulative,aes(x =Start.of.Status ,y = CumulativeInjuries,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete", color = "Athlete ID") +
+   scale_y_continuous(breaks=c(0,1,2,3,4,5))+
+  #ylim(0,5)+
+  theme_minimal()
+#figure out how to get it to start at 0 and show other lines
+
+#bar plot 
+ggplot(injury_b_cumulative, aes(x = Start.of.Status, y = CumulativeInjuries, group = anon_id)) +
+  geom_segment(aes(xend = End.Date, yend = CumulativeInjuries, color = anon_id), size = 2) +
+  geom_point(aes(color = anon_id)) +
+   scale_y_continuous(breaks=c(0,1,2,3,4,5))+
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete") +
+  theme_minimal()
+```
+
+```{r}
+#filter soccer incident data for plots 
+injury_s_cumulative <- incident_s %>%
+  filter(Status=="Out") %>%
+  arrange(anon_id, Start.of.Status) %>%
+  group_by(anon_id) %>%
+  mutate(CumulativeInjuries = row_number()) 
+
+#line graph 
+ggplot(injury_s_cumulative,aes(x =CumulativeInjuries ,y = Start.of.Status,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Cumulative Injuries per Athlete", y = "Injury Time Period", color = "Athlete ID") +
+  scale_x_continuous(breaks=c(0,1,2,3,4))+
+  #xlim(0,5)+
+  theme_minimal()
+ggplot(injury_s_cumulative,aes(x =Start.of.Status ,y = CumulativeInjuries,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete", color = "Athlete ID") +
+  scale_y_continuous(breaks=c(0,1,2,3,4))+
+  #ylim(0,5)+
+  theme_minimal()
+#figure out how to get it to start at 0 and show other lines
+
+#bar plot 
+ggplot(injury_s_cumulative, aes(x = Start.of.Status, y = CumulativeInjuries, group = anon_id)) +
+  geom_segment(aes(xend = End.Date, yend = CumulativeInjuries, color = anon_id), size = 2) +
+  geom_point(aes(color = anon_id)) +
+  scale_y_continuous(breaks=c(0,1,2,3,4))+
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete") +
+  theme_minimal()
+```
+
+```{r}
+#filter volleyball incident data for plots 
+injury_v_cumulative <- incident_v %>%
+  filter(Status=="Out") %>%
+  arrange(anon_id, Start.of.Status) %>%
+  group_by(anon_id) %>%
+  mutate(CumulativeInjuries = row_number()) 
+
+#line graph 
+ggplot(injury_v_cumulative,aes(x =CumulativeInjuries ,y = Start.of.Status,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Cumulative Injuries per Athlete", y = "Injury Time Period", color = "Athlete ID") +
+  scale_x_continuous(breaks=c(0,1,2,3))+
+  #xlim(0,5)+
+  theme_minimal()
+ggplot(injury_v_cumulative,aes(x =Start.of.Status ,y = CumulativeInjuries,color = as.factor(anon_id))) +
+  geom_line() +
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete", color = "Athlete ID") +
+  scale_y_continuous(breaks=c(0,1,2,3))+
+ # ylim(0,5)+
+  theme_minimal()
+#figure out how to get it to start at 0 and show other lines
+
+#bar plot 
+ggplot(injury_v_cumulative, aes(x = Start.of.Status, y = CumulativeInjuries, group = anon_id)) +
+  geom_segment(aes(xend = End.Date, yend = CumulativeInjuries, color = anon_id), size = 2) +
+  geom_point(aes(color = anon_id)) +
+  scale_y_continuous(breaks=c(0,1,2,3))+
+  labs(x = "Injury Time Period", y = "Cumulative Injuries per Athlete") +
   theme_minimal()
 ```
 
 
+#Forcedecks Strength Trends Sport to Sport 
 1. CMJ + Incident 
 ```{r}
 all_CMJ_incident <- all_CMJ_incident %>%
