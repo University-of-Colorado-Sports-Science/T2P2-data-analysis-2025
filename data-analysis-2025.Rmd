@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-#Authors: [Sydney Stanton, Carter Zborowski]
+#Authors: [Sydney Stanton, Carter Zborowski]   
 #Author Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 

@@ -430,6 +430,16 @@ IMTP_B <- Forcedecks_B %>%
   na.omit()   #50 obs & 30 vars
 ```
 
+```{r}
+#4: TEST.TYPE==DJ
+DJ_B <- Forcedecks_B %>%
+  filter(Test.Type=="DJ")  #162 
+  #select("anon_id", "Date", "Max.Jump.Height..cm.","Max.Contact.Time..s."."First.DJ.Contact.Time","DJ.Contact.Time...Difference.from.First", "Drop.Jump.Max.RSI..Flight.Time.Contact.Time.","Average.Drop.Jump.Max.RSI..Flight.Time.Contact.Time.","RSI.Modified..m.s.", "Max.RSI.Modified..m.s.", "Drop.Jump.Max.RSI..Flight.Time.Contact.Time.", "DJ.Max.RSI.Mod.VALD", )
+```
+
+
+
+
 #Forcedecks (VALD) Soccer Data
 ```{r}
 #1: TEST TYPE==CMJ
