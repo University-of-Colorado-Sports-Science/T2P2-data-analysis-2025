@@ -8,7 +8,7 @@ output: html_notebook
 #Author Date: 07/28/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/24/2025
+#LAST UPDATED: 07/28/2025
 
 #Including helpful libraries
 library(tidyverse)

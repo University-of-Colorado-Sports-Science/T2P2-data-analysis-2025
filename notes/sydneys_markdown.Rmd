@@ -438,8 +438,6 @@ DJ_B <- Forcedecks_B %>%
 ```
 
 
-
-
 #Forcedecks (VALD) Soccer Data
 ```{r}
 #1: TEST TYPE==CMJ
@@ -1204,6 +1202,8 @@ all_nordic_incident <- merge(all_incident, all_perf_nordic,by=c('anon_id'), na.r
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.24924)
+(1-odds.ratio)*100
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
 
