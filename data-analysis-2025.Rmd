@@ -49,6 +49,8 @@ Performance_V <- read.csv("data-sets/VALD - Performance Test WVB.csv")
 
 # Data Cleaning
 1. Incident Datasets
+
+#Incident Basketball Data
 ```{r}
 #BASKETBALL Incident dataset
 Incident_B <- Incident_B %>%                    #189 -> 128 obs.
@@ -104,6 +106,7 @@ incident_b <- incident_b %>%
 ```
 In womens basketball we have 42 total lower body injuries, 1 of those injuries are ACL injuries, and none are HSI injuries.
 
+#Incident Soccer Data
 ```{r}
 #SOCCER INCIDENT dataset
 Incident_S <- Incident_S %>%                    #361 -> 288 obs.
@@ -144,6 +147,48 @@ incident_s$Length.of.Status <- difftime(incident_s$End.Date, incident_s$Start.of
 ```
 In women's soccer there is a total of 76 lower body injuries, with 1 of them being ACL injuries, and 2 being HSI injuries.
 
+#Incident Lacrosse Data
+```{r}
+#LACROSSE incident dataset 
+Incident_L <- Incident_L %>%                    #139 -> 86 obs.
+filter(Incident.Type=="Injury") %>%
+filter(Status %in% c("Out", "As Tolerated")) %>%
+filter(Result.of.Sport.Participation=="Yes") %>%
+select(-Result.of.Sport.Participation)
+
+incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #34obs 
+
+#Lower body injury binary
+incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
+sum(incident_L$LB.Injury)
+
+#ACL injury (most intense LB injury)
+incident_L$ACL <- ifelse(incident_L$OSICS14.Code %in% c("KL1","KLA"),1,0)
+sum(incident_L$ACL)
+#HSI injury (overuse injury)
+incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
+sum(incident_L$HSI)
+
+#4/12/23-4/18/25 (2 years)
+
+#converting all dates
+incident_l <- incident_L %>%
+mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
+       Date = as.Date(Date, format = '%m/%d/%Y'),
+       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
+       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
+       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'),
+       Sport=case_when(
+    str_detect(Sport, "LACROSSE")~ "Lacrosse"
+  )
+)
+
+#create a length of status variable (Out, limited,as tolerated, full go)
+incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
+```
+In womens lacrosse 31 lower body injuries occurred, 3 being ACL related, 4 being HSI injury related.
+
+#Incident Volleyball Data
 ```{r}
 #VOLLEYBALL incident dataset
 Incident_V <- Incident_V %>%                    #220 -> 135 obs.
@@ -185,50 +230,9 @@ incident_v$Length.of.Status <- difftime(incident_v$End.Date, incident_v$Start.of
 ```
 In womens' volleyball 28 lower body injuries occurred, 4 of them being ACL injuries, 1 of them being HSI injuries. 
 
-```{r}
-#LACROSSE incident dataset 
-Incident_L <- Incident_L %>%                    #139 -> 86 obs.
-filter(Incident.Type=="Injury") %>%
-filter(Status %in% c("Out", "As Tolerated")) %>%
-filter(Result.of.Sport.Participation=="Yes") %>%
-select(-Result.of.Sport.Participation)
+2. Dynamo Dataset
 
-incident_L <- subset(Incident_L,select=c("anon_id","Date","Sport", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part.", "Tissue.Type","OSICS14.Code","OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.mechanism","Specific.Mechanism", "Injured.While.", "Month", "Year","Incident.Type","Status", "Season.","Start.of.Status", "End.Date", "Total.Time.Injured"))  #34obs 
-
-#Lower body injury binary
-incident_L$LB.Injury <- ifelse(incident_L$Body.Part. %in% c("Thigh", "Ankle", "Lower leg", "Knee", "Foot", "Groin/hip"),1,0)
-sum(incident_L$LB.Injury)
-
-#ACL injury (most intense LB injury)
-incident_L$ACL <- ifelse(incident_L$OSICS14.Code %in% c("KL1","KLA"),1,0)
-sum(incident_L$ACL)
-#HSI injury (overuse injury)
-incident_L$HSI <- ifelse(incident_L$OSICS14.Code %in% c("TM1","TMB","TMS"),1,0)
-sum(incident_L$HSI)
-
-#4/12/23-4/18/25 (2 years)
-
-#converting all dates
-incident_l <- incident_L %>%
-mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
-       Date = as.Date(Date, format = '%m/%d/%Y'),
-       Start.of.Status=as.Date(Start.of.Status,format='%m/%d/%Y'),
-       End.Date= as.Date(End.Date, format='%m/%d/%Y'),
-       Date.of.Injury...Onset.of.symptoms= as.Date(Date.of.Injury...Onset.of.symptoms, format='%m/%d/%Y'),
-       Sport=case_when(
-    str_detect(Sport, "LACROSSE")~ "Lacrosse"
-  )
-)
-
-#create a length of status variable (Out, limited,as tolerated, full go)
-incident_l$Length.of.Status <- difftime(incident_l$End.Date, incident_l$Start.of.Status,units=c("days"))
-```
-In womens lacrosse 31 lower body injuries occurred, 3 being ACL related, 4 being HSI injury related.
-
-## Dynamo Dataset
-We need to know the calculations for the asymmetry measures because they seem inconsistent.
-
-### 1. Basketball
+#Dynamo (VALD) Basketball Data
 ```{r}
 #selects variables of interest
 dynamo_B <- subset(Dynamo_B, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -244,7 +248,7 @@ dynamo_B <- dynamo_B %>%
 ```
 19 total observations, 3 with NA values in Knee.Ex.Max.Force..N..Asymmetry.
 
-### 2. Soccer
+#Dynamo (VALD) Soccer Data
 ```{r, warning = FALSE}
 #selects variables of interest
 dynamo_S <- subset(Dynamo_S, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -280,7 +284,7 @@ dynamo_S <- dynamo_S %>%
 ```
 Only 1 observation, none of the asymmetry statistics are summarized. 
 
-### 3. Lacrosse
+#Dynamo (VALD) Lacrosse Data
 ```{r}
 #selects variables of interest
 dynamo_L <- subset(Dynamo_L, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -296,7 +300,7 @@ dynamo_L <- dynamo_L %>%
 ```
 38 total observations, 23 with NA values in Knee.Ex.Max.Force..N..Asymmetry.
 
-### 4. Volleyball
+#Dynamo (VALD) Volleyball Data
 ```{r}
 #selects variables of interest
 dynamo_V <- subset(Dynamo_V, select = c('anon_id', 'Date', 'Knee.Ex.Right.Side.Max.Force..N.', 'Knee.Ex.Left.Side.Max.Force..N.', 'Knee.Ex.Max.Force..N..Asymmetry', 'Knee.Ex.Right.Side.Avg.Force..N.', 'Knee.Ex.Left.Side.Avg.Force..N.', 'Knee.Ex.Avg.Force.Asymmetry', 'Knee.Ex.Right.Side.Max.Impulse..Ns.', 'Knee.Ex.Left.Side.Max.Impulse..Ns.', 'Knee.Ex.Max.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Avg.Impulse..Ns.', 'Knee.Ex.Left.Side.Avg.Impulse..Ns.', 'Knee.Ex.Avg.Impulse.Asymmetry', 'Knee.Ex.Right.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Max.Rate.of.Force.Development..Ns.', 'Knee.Ex.Max.Rate.of.Force.Development.Asymmetry', 'Knee.Ex.Right.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Left.Side.Avg.Rate.of.Force.Development..Ns.', 'Knee.Ex.Avg.Rate.of.Force.Development.Asymmetry'))
@@ -383,6 +387,26 @@ CMJ_bb <- CMJ_b %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
+b <- Forcedecks_B %>%
+  filter(Test.Type == 'CMJ') %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  na.omit()
+
+#calculates differences from norm and makes Date a date object
+b <- b %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.417) / 0.417,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 30) / 30,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.51) / 0.51,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 98.4) / 98.4,
+         Sport = 'Basketball'
+  ) #442 obs and 39 vars
+```
+
+```{r}
 #2 TEST TYPE=HJ
 HJ_B <- Forcedecks_B %>%
   filter(Test.Type=="HJ")  %>% #424 obs
@@ -460,6 +484,26 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 
 CMJ_soc <- CMJ_s %>%
   na.omit()   #621 obs & 32 vars -> 600 -> 257 obs & 36 vars 
+```
+
+```{r}
+#selects counter movement jumps another way with normative information
+s <- Forcedecks_S %>%
+  filter(Test.Type == 'CMJ') %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  na.omit()
+
+#calculates differences from norm and makes Date a date object
+s <- s %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.416) / 0.416,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 30) / 30,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.49) / 0.49,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 81.5) / 81.5,
+         Sport = 'Soccer'
+  )
 ```
 
 ```{r}
@@ -581,6 +625,26 @@ mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
 
 CMJ_lax <- CMJ_l %>%
   na.omit()   #277 obs & 36 vars
+```
+
+```{r}
+#selects counter movement jumps another way with normative information
+l <- Forcedecks_L %>%
+  filter(Test.Type == 'CMJ') %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  na.omit()
+
+#calculates differences from norm and makes Date a date object
+l <- l %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.359) / 0.359,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 16) / 16,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 29) / 29,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.55) / 0.55,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 81.5) / 81.5,
+         Sport = 'Lacrosse'
+  )
 ```
 
 ```{r}
@@ -711,6 +775,26 @@ CMJ_vb <- CMJ_v %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
+v <- Forcedecks_V %>%
+  filter(Test.Type == 'CMJ') %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  na.omit()
+
+#calculates differences from norm and makes Date a date object
+v <- v %>%
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.421) / 0.421,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 33) / 33,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.52) / 0.52,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 96.0) / 96.0,
+         Sport = 'Volleyball'
+  )
+```
+
+```{r}
 #2:TEST TYPE= IMTP
 IMTP_V <- Forcedecks_V %>%
   filter(Test.Type=="IMTP") %>% #1241
@@ -732,7 +816,7 @@ HJ_V <- Forcedecks_V %>%
 4. Performance datasets
 Of all performance datasets, only basketball and volleyball have positional norm information but are also missing a lot of positional information which makes this column sparse. None of the datasets contain rotational data or razor data. Contain small amounts of iso prone data. 
 
-### 1. Basketball
+#Performance (VALD) Basketball Data
 ```{r}
 #selects variables of interest, nordic and hip data, and cleans up position variable
 performance_B <- subset(Performance_B, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
@@ -768,7 +852,7 @@ Need to either get more data on positions of players or get rid of percent diffe
 
 Hip dataset contains 109 observations including the bodyweight variable, 129 otherwise. 
 
-### 2. Soccer
+#Performance (VALD) Soccer Data
 ```{r}
 #selects variables of interest, nordic and hip data, and cleans up position variable
 performance_S <- subset(Performance_S, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
@@ -802,7 +886,7 @@ Does not contain any information about positional norms so there are no percent 
 
 Hip dataset contains only 39 observations with body weight included and without it included. 
 
-### 3. Lacrosse
+#Performance (VALD) Lacrosse Data
 ```{r}
 #selects variables of interest, nordic and hip data, and cleans up position variable
 performance_L <- subset(Performance_L, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
@@ -836,7 +920,7 @@ Also does not contain any information about positional norms so there are no per
 
 Hip dataset contains 100 observations with bodyweight included and excluded. 
 
-### 4. Volleyball
+#Performance (VALD) Volleyball Data
 ```{r}
 #selects variables of interest, nordic and hip data
 performance_V <- subset(Performance_V, select = c('anon_id', 'Date', 'Athlete.Bodyweight..kg.','Sport.Position', 'Side', 'Repetitions', 'Maximum.Force', 'Average.Force', 'Impulse', 'Nordic.Left.MEAN', 'Nordic.Right.MEAN', 'Nordic.MEAN.Imbalance', 'Nordic.Left.MAX', 'Nordic.Right.MAX', 'Nordic.MAX.Imbalance', 'Trend', 'Nordic...Difference.from.First.Test', 'Maximum.Nordic.Bilateral.Mean', 'Relative.Maximum.Nordic.Bilateral.Mean', 'Hip.Abd.Left.MEAN', 'Hip.Abd.Right.MEAN', 'Hip.Abduction.MEAN.Imbalance', 'Hip.Abd.Left.MAX', 'Hip.Abd.Right.MAX', 'Hip.Abduction.MAX.Imbalance', 'Hip.Add.Left.MEAN', 'Hip.Add.Right.MEAN', 'Hip.Adduction.MEAN.Imbalance', 'Hip.Add.Left.MAX', 'Hip.Add.Right.MAX', 'Hip.Adduction.MAX.Imbalance', 'Bilateral.Hip.Abduction.Adduction.Ratio')) %>%
@@ -3722,9 +3806,196 @@ anova_result <- aov(Concentric.Impulse..Ns. ~ Sport, data = all_SLJ_incident)
 summary(anova_result)
 ```
 
+## Recreating Normative Data
 
-## Performance Dataset
-### 1. Nordic Data
+```{r}
+library(grid)
+library(png)
+library(cowplot)
+library(magick)
+```
+
+### CMJ Data
+
+```{r}
+#creating a dataset containing all information for CMJ
+cmj <- rbind(b, s, l, v) %>%
+  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field')) %>%
+  filter(Jump.Height..Imp.Mom...cm. < 100)
+
+#summarizes important metrics
+cmj %>%
+  group_by(Sport) %>%
+  summarize(`Average Depth` = mean(Countermovement.Depth..cm.),
+            `Peak Power w/ BW` = mean(Peak.Power...BM..W.kg.),
+            `Peak Power` = mean(Peak.Power..W.),
+            `Ecc/Conc Force Ratio` = mean(Eccentric.Concentric.Mean.Force.Ratio),
+            `Ecc Braking Force` = mean(Eccentric.Mean.Braking.Force..N.),
+            `Conc Time to Peak` = mean(Concentric.Time.to.Peak.Force..s.),
+            `DSI` = mean(DSI))
+```
+
+```{r}
+#creates a density plot for maximum force across sports
+ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport, fill = Sport)) + 
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Jump Height Across Sports',
+       x = 'Jump Height (cm)',
+       y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
+  theme_bw()
+```
+
+```{r}
+#creates a density plot for maximum force across sports
+ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport.2, fill = Sport.2)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c('#CFB87C', '#000000')) +
+  scale_color_manual(values = c('#CFB87C', '#000000')) +
+  labs(title = 'Distribution of Jump Height Across Sports',
+       x = 'Jump Height (cm)',
+       y = 'Density',
+       fill = 'Sport Type',
+       color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
+  theme_bw()
+```
+
+```{r}
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/jh_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(l, aes(x = Jump.Height..Imp.Mom...cm.)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Jump Height',
+       x = 'Jump Height (cm)',
+       y = 'Density',
+       caption = 'CU Womens Lacrosse') +
+  geom_vline(xintercept = median(l$Jump.Height..Imp.Mom...cm.), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(l$Jump.Height..Imp.Mom...cm., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
+```
+
+```{r}
+quantile(l$Jump.Height..Imp.Mom...cm., probs = c(0.25, 0.5, 0.75))
+```
+
+```{r}
+b['Year'] <- as.factor(year(b$Date))
+b['Month'] <- as.factor(month(b$Date))
+
+b2 <- b %>%
+  group_by(Year, Month) %>%
+  summarize(Force.at.Peak.Power..N. = mean(Force.at.Peak.Power..N.), .groups = 'drop') %>%
+  mutate(Date = as.Date(paste(b2$Year, b2$Month, "01", sep = "-")))
+
+#creates a density plot for maximum force across sports
+ggplot(b2, aes(x = Date, y = Force.at.Peak.Power..N.)) + 
+  geom_line() + 
+  labs(title = 'Distribution of Force at Peak Power Across Year',
+       x = 'Force at Peak Power (N)',
+       y = 'Density') +
+  theme_bw()
+```
+
+```{r}
+#performs a Welch's T-test for difference of means
+t.test(Peak.Net.Takeoff.Force...BM..N.kg. ~ Sport.2, data = cmj)
+t.test(Landing.Net.Peak.Force...BM..N.kg. ~ Sport.2, data = cmj)
+t.test(Force.at.Peak.Power..N. ~ Sport.2, data = cmj)
+t.test(RSI.Modified..m.s. ~ Sport.2, data = cmj)
+t.test(DSI ~ Sport.2, data = cmj)
+```
+
+Most differences are very significant between court and field sports. 
+
+All sports are statistically signficantly away from each other. Volleyball <<< Basketball <<< Soccer <<< Lacrosse
+
+```{r}
+t.test(Force.at.Peak.Power..N. ~ Sport, data = cmj %>% filter(Sport %in% c('Soccer', 'Lacrosse')))
+```
+
+### HJ Data
+
+```{r}
+#creating a dataset containing all information for CMJ
+hj <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
+  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'))
+```
+
+```{r}
+#creates a density plot for maximum force across sports
+ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport, fill = Sport)) + 
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  labs(title = 'Distribution of Mean Contact Time Across Sports',
+       x = 'Mean Contact Time (s)',
+       y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
+  theme_bw()
+```
+
+```{r}
+#creates a density plot for maximum force across sports
+ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport.2, fill = Sport.2)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c('#CFB87C', '#000000')) +
+  scale_color_manual(values = c('#CFB87C', '#000000')) +
+  labs(title = 'Distribution of Mean Contact Time Across Sports',
+       x = 'Mean Contact Time (s)',
+       y = 'Density',
+       fill = 'Sport Type',
+       color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
+  theme_bw()
+```
+
+```{r}
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/hjcontact_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(HJ_L, aes(x = Mean.Contact.Time..ms.)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Mean Contact Time',
+       x = 'Mean Contact Time (s)',
+       y = 'Density',
+       caption = 'CU Womens Lacrosse') +
+  geom_vline(xintercept = median(HJ_L$Mean.Contact.Time..ms.), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.04)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
+```
+
+```{r}
+quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.25, 0.5, 0.75))
+```
+
+```{r}
+t.test(Mean.Contact.Time..ms. ~ Sport, data = hj %>% filter(Sport %in% c('Lacrosse', 'Volleyball')))
+```
+
+### Nordic Data
+
 ```{r}
 #creating a dataset containing performance data across all sports
 performance_all_nordic <- rbind(performance_B_nordic, performance_S_nordic, performance_L_nordic, performance_V_nordic) %>%
@@ -3738,89 +4009,148 @@ performance_all_nordic %>%
             `Average Relative Maximum Nordic Bilateral Mean` = mean(Relative.Maximum.Nordic.Bilateral.Mean),
             `Average Mean Imbalance` = mean(Nordic.MEAN.Imbalance),
             `Average Max Imbalance` = mean(Nordic.MAX.Imbalance))
-```
 
-```{r}
-#creates a boxplot of maximum relative bilateral force across the 4 sports
-ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Sport.2)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Sports',
-       y = 'Sport',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
+#creates a subset of just the court sports
+field_all <- performance_all_nordic %>%
+  filter(Sport.2 == 'Field')
+
+#creates a subset of just the court sports
+court_all <- performance_all_nordic %>%
+  filter(Sport.2 == 'Court')
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(performance_all_nordic, aes(x = Maximum.Force, color = Sport, fill = Sport)) + 
+ggplot(performance_all_nordic, aes(x = Maximum.Nordic.Bilateral.Mean, color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   labs(title = 'Distribution of Maximum Nordic Force Across Sports',
-       x = 'Maximum Nordic Force (N)',
+       x = 'Maximum Bilateral Average Force (N)',
        y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 600, by = 50)) + 
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum bilateral force across sport type
 ggplot(performance_all_nordic, aes(x = Maximum.Nordic.Bilateral.Mean, color = Sport.2, fill = Sport.2)) + 
-  geom_density(alpha = 0.4) + 
+  geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Maximum Bilateral Nordic Force Across Sports',
-       x = 'Maximum Bilateral Mean Force (N)',
+  labs(title = 'Distribution of Maximum Nordic Force Across Sports',
+       x = 'Maximum Bilateral Average Force (N)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 600, by = 50)) + 
   theme_bw()
 ```
 
 ```{r}
-#could use effectsize
-library(effectsize)
+field_all['Year'] <- (year(field_all$Date))
+field_all['Month'] <- (month(field_all$Date))
 
-result <- t.test(Maximum.Nordic.Bilateral.Mean ~ Sport.2, data = performance_all_nordic)
-cohens_d(Maximum.Nordic.Bilateral.Mean ~ Sport.2, data = performance_all_nordic)
+field_all2 <- field_all %>%
+  mutate(Month.2 = case_when(
+    1 <= Month & Month <= 3 ~ 1,
+    4 <= Month & Month <= 6 ~ 4,
+    7 <= Month & Month <= 9 ~ 7,
+    TRUE ~ 10
+  )) %>%
+  group_by(Year, Month.2) %>%
+  summarize(Maximum.Nordic.Bilateral.Mean = mean(Maximum.Nordic.Bilateral.Mean), .groups = 'drop') %>%
+  mutate(Date = as.Date(paste(field_all2$Year, field_all2$Month.2, "01", sep = "-")))
+
+#creates a density plot for maximum force across sports
+ggplot(field_all2, aes(x = Date, y = Maximum.Nordic.Bilateral.Mean)) + 
+  geom_line(color = '#666666') + 
+  labs(title = 'Maximum Nordic Bilateral Force Over Time',
+       x = 'Average Maximum Nordic Bilateral Force (N)',
+       y = 'Density',
+       caption = 'CU Field Sports') +
+  scale_x_date(date_breaks = '6 months') +
+  theme_bw()
+```
+
+```{r}
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/nordic_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(performance_L_nordic, aes(x = Maximum.Nordic.Bilateral.Mean)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Maximum Nordic Force',
+       x = 'Maximum Bilateral Average Force (N)',
+       y = 'Density',
+       caption = 'CU Womens Lacrosse') +
+  geom_vline(xintercept = median(performance_L_nordic$Maximum.Nordic.Bilateral.Mean), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 1000, by = 50)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
+```
+
+The large outliers are ID_69 in womens lacrosse and ID_3 in womens soccer. ID_69 did not appear in the incident report at all. ID_3 appeared 3 times in the incident report with Right Knee Pain/Injury Not otherwise specified - 05/08/2024, Left Quadriceps strain/tear - 03/06/2024, Right Gluteus medius/minimus strain - 10/02/2024. The observation for performance strength was 02/03/2025 which indicates it occured after all of her injuries. Both athletes also have a handful of other observations that fit into the center of the distribution.
+
+```{r}
+quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, probs = c(0.25, 0.5, 0.75))
+```
+
+```{r}
+ggplot(performance_V_nordic, aes(x = Maximum.Nordic.Bilateral.Mean)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Maximum Nordic Bilateral Force',
+       x = 'Maximum Nordic Bilateral Mean (N)',
+       y = 'Density',
+       caption = 'CU Womens Volleyball') +
+  geom_vline(xintercept = median(performance_V_nordic$Maximum.Nordic.Bilateral.Mean), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(performance_V_nordic$Maximum.Nordic.Bilateral.Mean, probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  theme_bw()
 ```
 
 ```{r}
 #performs a Welch's T-test for difference of means
 t.test(Maximum.Nordic.Bilateral.Mean ~ Sport.2, data = performance_all_nordic, alternative = 'greater')
 t.test(Relative.Maximum.Nordic.Bilateral.Mean ~ Sport.2, data = performance_all_nordic, alternative = 'less')
-t.test(Nordic.MAX.Imbalance ~ Sport.2, data = performance_all_nordic)
 t.test(Nordic.MEAN.Imbalance ~ Sport.2, data = performance_all_nordic)
+t.test(Impulse ~ Sport.2, data = performance_all_nordic, alternative = 'greater')
+t.test(Force.Diff.Norm ~ Sport.2, data = performance_all_nordic, alternative = 'greater')
 ```
 
 There is a lot of statistical evidence for a difference in the means of court sports vs field sports in maximum nordic bilateral mean force. There is less but still statistically significant evidence for a difference in the average imbalance and max imbalance between sport types with field sports typically having more imbalance. 
 
 ```{r}
-#creates a subset of just the court sports
-court_all <- performance_all_nordic %>%
-  filter(Sport.2 == 'Court')
-
 #performs a Welch's T-test for difference of means within court sports
 t.test(Maximum.Nordic.Bilateral.Mean ~ Sport, data = court_all)
 t.test(Relative.Maximum.Nordic.Bilateral.Mean ~ Sport, data = court_all)
 t.test(Nordic.MEAN.Imbalance ~ Sport, data = court_all)
-t.test(Nordic.MAX.Imbalance ~ Sport, data = court_all)
+t.test(Impulse ~ Sport, data = court_all)
+t.test(Force.Diff.Norm ~ Sport, data = court_all)
 ```
 
 There is a very small difference between these two sports, with basketball being slightly stronger, but the p-value is almost significant at the 0.05 level. No statistical signficance in terms of imbalance. 
 
 ```{r}
-#creates a subset of just the court sports
-field_all <- performance_all_nordic %>%
-  filter(Sport.2 == 'Field')
-
 #performs a Welch's T-test for difference of means within court sports
 t.test(Maximum.Nordic.Bilateral.Mean ~ Sport, data = field_all)
 t.test(Relative.Maximum.Nordic.Bilateral.Mean ~ Sport, data = field_all)
 t.test(Nordic.MEAN.Imbalance ~ Sport, data = field_all)
-t.test(Nordic.MAX.Imbalance ~ Sport, data = field_all)
+t.test(Impulse ~ Sport, data = field_all)
+t.test(Force.Diff.Norm ~ Sport, data = field_all)
 ```
 
 There is a lot of statistical evidence that there is a difference in the means of maximum nordic bilateral mean force between the field sports with soccer having a significantly higher mean than lacrosse. There is statistical evidence of a difference in imbalance with lacrosse having significantly more mean and max imbalance compared to soccer but most likely also basketball and volleyball. 
+
+```{r}
+t.test(Nordic.MEAN.Imbalance ~ Sport, data = performance_all_nordic %>% filter(Sport %in% c('Volleyball', 'Basketball')))
+```
 
 ```{r}
 #anova test for differences
@@ -3830,7 +4160,7 @@ summary(anova_result)
 
 Using the anova test there is slight statistical evidence of a difference in mean imbalance between sports and more for max imbalance between sports. 
 
-### 2. Hip Data
+### Hip Data
 
 ```{r}
 #creating a dataset containing performance hip data across all sports
@@ -3860,13 +4190,27 @@ performance_all_hip %>%
 
 ```{r}
 #creates a density plot of hip abduction across the 4 sports
-ggplot(performance_all_hip, aes(x = Avg.Abd.Mean, fill = Sport)) +
+ggplot(performance_all_hip %>% filter(Bilateral.Hip.Abduction.Adduction.Ratio < 2), aes(x = Bilateral.Hip.Abduction.Adduction.Ratio, fill = Sport, color = Sport)) +
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Bilateral Max Adduction Across Sports',
-       x = 'Bilateral Adduction Max (N)',
+  labs(title = 'Distribution of Abd/Add Impulse Across Sports',
+       x = 'Impulse',
        y = 'Density') +
+  theme_bw()
+```
+
+```{r}
+#creates a density plot for maximum bilateral force across sport type
+ggplot(performance_all_hip, aes(x = Impulse, color = Sport.2, fill = Sport.2)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c('#CFB87C', '#000000')) +
+  scale_color_manual(values = c('#CFB87C', '#000000')) +
+  labs(title = 'Distribution of Abd/Add Impulse Across Sports',
+       x = 'Impulse',
+       y = 'Density',
+       fill = 'Sport Type',
+       color = 'Sport Type') +
   theme_bw()
 ```
 
@@ -3915,5 +4259,9 @@ summary(anova_result)
 ```
 
 Using anova test there is no statistical evidence of a difference in means between sports for average/max hip adduction imbalance or bilateral hip abduction adduction ratio. There is however very slight statistical evidence of a difference in means between the sports for average/max hip abduction imbalance. 
+
+```{r}
+t.test(Impulse ~ Sport, data = performance_all_hip %>% filter(Sport %in% c('Soccer', 'Basketball')))
+```
 
 
