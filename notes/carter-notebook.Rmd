@@ -452,43 +452,23 @@ CMJ_bb <- CMJ_b %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
 b <- Forcedecks_B %>%
   filter(Test.Type == 'CMJ') %>%
-  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket") %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
   na.omit()
 
+#calculates differences from norm and makes Date a date object
 b <- b %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
          RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.417) / 0.417,
-         ) %>%
-  group_by(anon_id, Date) %>%
-  summarise(Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
-            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
-            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
-            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
-            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
-            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
-            Concentric.RFD..N.s.= mean(Concentric.RFD..N.s.,na.rm=TRUE),
-            Concentric.RFD..Left...N.s.= mean(Concentric.RFD..Left...N.s.,na.rm=TRUE),
-            Concentric.RFD..Right...N.s.= mean(Concentric.RFD..Right...N.s.,na.rm=TRUE),
-            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
-            Concentric.Time.to.Peak.Force..s.= mean(Concentric.Time.to.Peak.Force..s.,na.rm=TRUE),
-            Landing.Net.Peak.Force...BM..N.kg.= mean(Landing.Net.Peak.Force...BM..N.kg.,na.rm=TRUE),
-            Peak.Net.Takeoff.Force...BM..N.kg.= mean(Peak.Net.Takeoff.Force...BM..N.kg.,na.rm=TRUE),
-            Concentric.RPD...BM..W.s.kg.= mean(Concentric.RPD...BM..W.s.kg.,na.rm=TRUE),
-            Force.at.Peak.Power..N.= mean(Force.at.Peak.Power..N.,na.rm=TRUE),
-            Eccentric.Mean.Deceleration.Force..N.= mean(Eccentric.Mean.Deceleration.Force..N.,na.rm=TRUE),
-            Eccentric.Peak.Force..N.= mean(Eccentric.Peak.Force..N.,na.rm=TRUE),
-            RSI.Modified..m.s.= mean(RSI.Modified..m.s.,na.rm=TRUE),
-            CMJ.Stiffness..Left...N.m.= mean(CMJ.Stiffness..Left...N.m.,na.rm=TRUE),
-            CMJ.Stiffness..Right...N.m.= mean(CMJ.Stiffness..Right...N.m.,na.rm=TRUE),
-            Eccentric.Asymmetry= get_mode(Eccentric.Asymmetry),
-            Concentric.Asymmetry= get_mode(Concentric.Asymmetry),
-            Peak.Landing.Asymmetry= get_mode(Peak.Landing.Asymmetry),
-            DSI = mean(DSI,na.rm=TRUE),
-            DSI.Bucket = get_mode(DSI.Bucket),
-            .groups = 'drop') %>%
-  mutate(Sport = 'Basketball')
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 30) / 30,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.51) / 0.51,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 98.4) / 98.4,
+         Sport = 'Basketball'
+  )
 ```
 
 
@@ -503,8 +483,6 @@ HJ_B <- Forcedecks_B %>%
                  #409 obs & 20 vars
 ```
 
-Could look at HJ.RSI
-
 ```{r}
 #3: TEST TYPE= IMTP
 IMTP_B <- Forcedecks_B %>%
@@ -514,14 +492,6 @@ IMTP_B <- Forcedecks_B %>%
   mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
   na.omit() %>%
   mutate(Sport = 'Basketball')   #50 obs & 30 vars
-```
-
-```{r}
-#selects variables of interest, omits NAs, and makes date a date object
-forcedecks_b <- Forcedecks_B %>%
-  dplyr::select(anon_id, Date, MEAN.Eccentric.Mean.Force.Left, MEAN.Eccentric.Mean.Force.Right, MEAN.Concentric.Mean.Force.Left, MEAN.Concentric.Mean.Force.Right, MEAN.Concentric.Mean.Force.Asym, MEAN.Peak.Landing.Force.Asym, MEAN.CMJ.Jump.Height, MEAN.Relative.Peak.Power, MEAN.CMJ.Concentric.Force, MEAN.Peak.Landing.Force.Left, MEAN.Peak.Landing.Force.Right) %>%
-  na.omit() %>%
-  mutate(Date = as.Date(Date, format = '%m/%d/%Y'))
 ```
 
 ### 2. Soccer
@@ -587,41 +557,23 @@ CMJ_soc <- CMJ_s %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
 s <- Forcedecks_S %>%
   filter(Test.Type == 'CMJ') %>%
-  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket") %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
   na.omit()
 
+#calculates differences from norm and makes Date a date object
 s <- s %>%
-  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  group_by(anon_id, Date) %>%
-  summarise(Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
-            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
-            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
-            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
-            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
-            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
-            Concentric.RFD..N.s.= mean(Concentric.RFD..N.s.,na.rm=TRUE),
-            Concentric.RFD..Left...N.s.= mean(Concentric.RFD..Left...N.s.,na.rm=TRUE),
-            Concentric.RFD..Right...N.s.= mean(Concentric.RFD..Right...N.s.,na.rm=TRUE),
-            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
-            Concentric.Time.to.Peak.Force..s.= mean(Concentric.Time.to.Peak.Force..s.,na.rm=TRUE),
-            Landing.Net.Peak.Force...BM..N.kg.= mean(Landing.Net.Peak.Force...BM..N.kg.,na.rm=TRUE),
-            Peak.Net.Takeoff.Force...BM..N.kg.= mean(Peak.Net.Takeoff.Force...BM..N.kg.,na.rm=TRUE),
-            Concentric.RPD...BM..W.s.kg.= mean(Concentric.RPD...BM..W.s.kg.,na.rm=TRUE),
-            Force.at.Peak.Power..N.= mean(Force.at.Peak.Power..N.,na.rm=TRUE),
-            Eccentric.Mean.Deceleration.Force..N.= mean(Eccentric.Mean.Deceleration.Force..N.,na.rm=TRUE),
-            Eccentric.Peak.Force..N.= mean(Eccentric.Peak.Force..N.,na.rm=TRUE),
-            RSI.Modified..m.s.= mean(RSI.Modified..m.s.,na.rm=TRUE),
-            CMJ.Stiffness..Left...N.m.= mean(CMJ.Stiffness..Left...N.m.,na.rm=TRUE),
-            CMJ.Stiffness..Right...N.m.= mean(CMJ.Stiffness..Right...N.m.,na.rm=TRUE),
-            Eccentric.Asymmetry= get_mode(Eccentric.Asymmetry),
-            Concentric.Asymmetry= get_mode(Concentric.Asymmetry),
-            Peak.Landing.Asymmetry= get_mode(Peak.Landing.Asymmetry),
-            DSI = mean(DSI,na.rm=TRUE),
-            DSI.Bucket = get_mode(DSI.Bucket),
-            .groups = 'drop') %>%
-  mutate(Sport = 'Soccer')
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.416) / 0.416,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 30) / 30,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.49) / 0.49,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 81.5) / 81.5,
+         Sport = 'Soccer'
+  )
 ```
 
 ```{r}
@@ -750,41 +702,23 @@ CMJ_lax <- CMJ_l %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
 l <- Forcedecks_L %>%
   filter(Test.Type == 'CMJ') %>%
-  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket") %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
   na.omit()
 
+#calculates differences from norm and makes Date a date object
 l <- l %>%
-  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  group_by(anon_id, Date) %>%
-  summarise(Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
-            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
-            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
-            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
-            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
-            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
-            Concentric.RFD..N.s.= mean(Concentric.RFD..N.s.,na.rm=TRUE),
-            Concentric.RFD..Left...N.s.= mean(Concentric.RFD..Left...N.s.,na.rm=TRUE),
-            Concentric.RFD..Right...N.s.= mean(Concentric.RFD..Right...N.s.,na.rm=TRUE),
-            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
-            Concentric.Time.to.Peak.Force..s.= mean(Concentric.Time.to.Peak.Force..s.,na.rm=TRUE),
-            Landing.Net.Peak.Force...BM..N.kg.= mean(Landing.Net.Peak.Force...BM..N.kg.,na.rm=TRUE),
-            Peak.Net.Takeoff.Force...BM..N.kg.= mean(Peak.Net.Takeoff.Force...BM..N.kg.,na.rm=TRUE),
-            Concentric.RPD...BM..W.s.kg.= mean(Concentric.RPD...BM..W.s.kg.,na.rm=TRUE),
-            Force.at.Peak.Power..N.= mean(Force.at.Peak.Power..N.,na.rm=TRUE),
-            Eccentric.Mean.Deceleration.Force..N.= mean(Eccentric.Mean.Deceleration.Force..N.,na.rm=TRUE),
-            Eccentric.Peak.Force..N.= mean(Eccentric.Peak.Force..N.,na.rm=TRUE),
-            RSI.Modified..m.s.= mean(RSI.Modified..m.s.,na.rm=TRUE),
-            CMJ.Stiffness..Left...N.m.= mean(CMJ.Stiffness..Left...N.m.,na.rm=TRUE),
-            CMJ.Stiffness..Right...N.m.= mean(CMJ.Stiffness..Right...N.m.,na.rm=TRUE),
-            Eccentric.Asymmetry= get_mode(Eccentric.Asymmetry),
-            Concentric.Asymmetry= get_mode(Concentric.Asymmetry),
-            Peak.Landing.Asymmetry= get_mode(Peak.Landing.Asymmetry),
-            DSI = mean(DSI,na.rm=TRUE),
-            DSI.Bucket = get_mode(DSI.Bucket),
-            .groups = 'drop') %>%
-  mutate(Sport = 'Lacrosse')
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.359) / 0.359,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 16) / 16,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 29) / 29,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.55) / 0.55,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 81.5) / 81.5,
+         Sport = 'Lacrosse'
+  )
 ```
 
 ```{r}
@@ -914,41 +848,23 @@ CMJ_vb <- CMJ_v %>%
 ```
 
 ```{r}
+#selects counter movement jumps another way with normative information
 v <- Forcedecks_V %>%
   filter(Test.Type == 'CMJ') %>%
-  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket") %>%
+  dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
   na.omit()
 
+#calculates differences from norm and makes Date a date object
 v <- v %>%
-  mutate(Date = as.Date(Date, format = '%m/%d/%Y')) %>%
-  group_by(anon_id, Date) %>%
-  summarise(Countermovement.Depth..cm.= mean(Countermovement.Depth..cm., na.rm=TRUE),
-            Peak.Power...BM..W.kg.= mean(Peak.Power...BM..W.kg., na.rm=TRUE),
-            Landing.RFD..N.s.= mean(Landing.RFD..N.s.,na.rm=TRUE),
-            Eccentric.Concentric.Mean.Force.Ratio= mean(Eccentric.Concentric.Mean.Force.Ratio,na.rm=TRUE),
-            Peak.Landing.Force..Asym...N.= mean(Peak.Landing.Force..Asym...N.,na.rm=TRUE),
-            Peak.Power..W.= mean(Peak.Power..W.,na.rm=TRUE),
-            Concentric.RFD..N.s.= mean(Concentric.RFD..N.s.,na.rm=TRUE),
-            Concentric.RFD..Left...N.s.= mean(Concentric.RFD..Left...N.s.,na.rm=TRUE),
-            Concentric.RFD..Right...N.s.= mean(Concentric.RFD..Right...N.s.,na.rm=TRUE),
-            Eccentric.Mean.Braking.Force..N.= mean(Eccentric.Mean.Braking.Force..N.,na.rm=TRUE),
-            Concentric.Time.to.Peak.Force..s.= mean(Concentric.Time.to.Peak.Force..s.,na.rm=TRUE),
-            Landing.Net.Peak.Force...BM..N.kg.= mean(Landing.Net.Peak.Force...BM..N.kg.,na.rm=TRUE),
-            Peak.Net.Takeoff.Force...BM..N.kg.= mean(Peak.Net.Takeoff.Force...BM..N.kg.,na.rm=TRUE),
-            Concentric.RPD...BM..W.s.kg.= mean(Concentric.RPD...BM..W.s.kg.,na.rm=TRUE),
-            Force.at.Peak.Power..N.= mean(Force.at.Peak.Power..N.,na.rm=TRUE),
-            Eccentric.Mean.Deceleration.Force..N.= mean(Eccentric.Mean.Deceleration.Force..N.,na.rm=TRUE),
-            Eccentric.Peak.Force..N.= mean(Eccentric.Peak.Force..N.,na.rm=TRUE),
-            RSI.Modified..m.s.= mean(RSI.Modified..m.s.,na.rm=TRUE),
-            CMJ.Stiffness..Left...N.m.= mean(CMJ.Stiffness..Left...N.m.,na.rm=TRUE),
-            CMJ.Stiffness..Right...N.m.= mean(CMJ.Stiffness..Right...N.m.,na.rm=TRUE),
-            Eccentric.Asymmetry= get_mode(Eccentric.Asymmetry),
-            Concentric.Asymmetry= get_mode(Concentric.Asymmetry),
-            Peak.Landing.Asymmetry= get_mode(Peak.Landing.Asymmetry),
-            DSI = mean(DSI,na.rm=TRUE),
-            DSI.Bucket = get_mode(DSI.Bucket),
-            .groups = 'drop') %>%
-  mutate(Sport = 'Volleyball')
+  mutate(Date = as.Date(Date, format = '%m/%d/%Y'),
+         RSI.Modified..m.s. = RSI.Modified..m.s. / 100,
+         RSI.Modified.Diff.Norm = (RSI.Modified..m.s. - 0.417) / 0.417,
+         Ecc.Peak.Power.Rel.Diff.Norm = (Eccentric.Peak.Power...BM..W.kg. - 18) / 18,
+         Jump.Heigh.Diff.Norm = (Jump.Height..Imp.Mom...cm. - 30) / 30,
+         Ecc.Duration.Diff.Norm = (Eccentric.Duration..s. - 0.51) / 0.51,
+         Ecc.Deceleration.Impulse.Diff.Norm = (Eccentric.Deceleration.Impulse..Ns. - 98.4) / 98.4,
+         Sport = 'Volleyball'
+  )
 ```
 
 ```{r}
@@ -3419,6 +3335,13 @@ Volleyball is significant with a lower value for RFD at 100 ms in the injured gr
 # Question 2: Strength Trends Across Sports
 
 
+```{r}
+library(grid)
+library(png)
+library(cowplot)
+library(magick)
+```
+
 ## Incident Rates
 
 **Basketball**
@@ -3446,7 +3369,8 @@ Thigh: 5 injuries out of 29 lower body (3 HSI)
 ```{r}
 #creating a dataset containing all information for CMJ
 cmj <- rbind(b, s, l, v) %>%
-  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'))
+  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field')) %>%
+  filter(Jump.Height..Imp.Mom...cm. < 100)
 
 #summarizes important metrics
 cmj %>%
@@ -3462,28 +3386,58 @@ cmj %>%
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(cmj, aes(x = Landing.Net.Peak.Force...BM..N.kg., color = Sport, fill = Sport)) + 
+ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Force at Peak Power Across Sports',
-       x = 'Force at Peak Power (N)',
+  labs(title = 'Distribution of Jump Height Across Sports',
+       x = 'Jump Height (cm)',
        y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(cmj, aes(x = Force.at.Peak.Power..N., color = Sport.2, fill = Sport.2)) + 
+ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Force at Peak Power Across Sports',
-       x = 'Force at Peak Power (N)',
+  labs(title = 'Distribution of Jump Height Across Sports',
+       x = 'Jump Height (cm)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
   theme_bw()
+```
+
+```{r}
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/jh_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(l, aes(x = Jump.Height..Imp.Mom...cm.)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Jump Height',
+       x = 'Jump Height (cm)',
+       y = 'Density',
+       caption = 'CU Womens Lacrosse') +
+  geom_vline(xintercept = median(l$Jump.Height..Imp.Mom...cm.), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(l$Jump.Height..Imp.Mom...cm., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
+```
+
+```{r}
+quantile(l$Jump.Height..Imp.Mom...cm., probs = c(0.25, 0.5, 0.75))
 ```
 
 ```{r}
@@ -3531,45 +3485,62 @@ hj <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(hj, aes(x = Max.Jump.Height..cm., color = Sport, fill = Sport)) + 
+ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Best Impulse Hop Jump Across Sports',
-       x = 'Best Impulse (N/s)',
+  labs(title = 'Distribution of Mean Contact Time Across Sports',
+       x = 'Mean Contact Time (s)',
        y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(hj, aes(x = Best.Impulse..N.s., color = Sport.2, fill = Sport.2)) + 
+ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Best Impulse Hop Jump Across Sports',
-       x = 'Best Impulse (N/s)',
+  labs(title = 'Distribution of Mean Contact Time Across Sports',
+       x = 'Mean Contact Time (s)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
   theme_bw()
 ```
 
 ```{r}
-ggplot(HJ_L, aes(x = Mean.Contact.Time..ms.)) + 
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/hjcontact_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(HJ_L, aes(x = Mean.Contact.Time..ms.)) + 
   geom_density(fill = '#CFB87C') +
   labs(title = 'Distribution of Mean Contact Time',
-       x = 'Mean Contact Time (ms)',
+       x = 'Mean Contact Time (s)',
        y = 'Density',
        caption = 'CU Womens Lacrosse') +
   geom_vline(xintercept = median(HJ_L$Mean.Contact.Time..ms.), linetype = 'solid') +
   geom_vline(xintercept = c(quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
-  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.05)) + 
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.04)) + 
   theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
 ```
 
 ```{r}
-t.test(Max.Jump.Height..cm. ~ Sport, data = hj %>% filter(Sport %in% c('Basketball', 'Volleyball')))
+quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.25, 0.5, 0.75))
+```
+
+```{r}
+t.test(Mean.Contact.Time..ms. ~ Sport, data = hj %>% filter(Sport %in% c('Lacrosse', 'Volleyball')))
 ```
 
 ## Performance Dataset
@@ -3600,38 +3571,30 @@ court_all <- performance_all_nordic %>%
 ```
 
 ```{r}
-#creates a boxplot of maximum relative bilateral force across the 4 sports
-ggplot(performance_all_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Sport.2)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Sports',
-       y = 'Sport',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-
-```{r}
 #creates a density plot for maximum force across sports
-ggplot(performance_all_nordic, aes(x = Nordic.MEAN.Imbalance, color = Sport, fill = Sport)) + 
+ggplot(performance_all_nordic, aes(x = Maximum.Nordic.Bilateral.Mean, color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
   scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Mean Imbalance Across Sports',
-       x = 'Mean Imbalance',
+  labs(title = 'Distribution of Maximum Nordic Force Across Sports',
+       x = 'Maximum Bilateral Average Force (N)',
        y = 'Density') +
+  scale_x_continuous(breaks = seq(from = 0, to = 600, by = 50)) + 
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum bilateral force across sport type
-ggplot(performance_all_nordic, aes(x = Nordic.MEAN.Imbalance, color = Sport.2, fill = Sport.2)) + 
+ggplot(performance_all_nordic, aes(x = Maximum.Nordic.Bilateral.Mean, color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Mean Imbalance Across Sports',
-       x = 'Mean Imbalance',
+  labs(title = 'Distribution of Maximum Nordic Force Across Sports',
+       x = 'Maximum Bilateral Average Force (N)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(from = 0, to = 600, by = 50)) + 
   theme_bw()
 ```
 
@@ -3662,26 +3625,34 @@ ggplot(field_all2, aes(x = Date, y = Maximum.Nordic.Bilateral.Mean)) +
 ```
 
 ```{r}
-intercepts <- data.frame(
-  Sport = c('Soccer', 'Lacrosse'),
-  Median = c(median(performance_S_nordic$Maximum.Nordic.Bilateral.Mean), median(performance_L_nordic$Maximum.Nordic.Bilateral.Mean)),
-  Percentiles = c(quantile(performance_S_nordic$Maximum.Nordic.Bilateral.Mean, 0.01), quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, 0.01), quantile(performance_S_nordic$Maximum.Nordic.Bilateral.Mean, 0.99), quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, 0.99), quantile(performance_S_nordic$Maximum.Nordic.Bilateral.Mean, 0.25), quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, 0.25), quantile(performance_S_nordic$Maximum.Nordic.Bilateral.Mean, 0.75), quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, 0.75))
-)
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/nordic_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
 
-#creates a density plot for maximum bilateral force across sport type
-ggplot(field_all, aes(x = Maximum.Nordic.Bilateral.Mean)) + 
-  geom_density(fill = '#CFB87C') + 
-  labs(title = 'Distribution of Maximum Nordic Bilateral Force',
-       x = 'Maximum Nordic Bilateral Mean (N)',
+p <- ggplot(performance_L_nordic, aes(x = Maximum.Nordic.Bilateral.Mean)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Maximum Nordic Force',
+       x = 'Maximum Bilateral Average Force (N)',
        y = 'Density',
-       caption = 'CU Field Sports') +
-  facet_wrap(~Sport) + 
-  geom_vline(data = intercepts, aes(xintercept = Median), linetype = 'solid') +
-  geom_vline(data = intercepts, aes(xintercept = Percentiles), linetype = 'dashed') + 
+       caption = 'CU Womens Lacrosse') +
+  geom_vline(xintercept = median(performance_L_nordic$Maximum.Nordic.Bilateral.Mean), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 1000, by = 50)) + 
   theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
 ```
 
 The large outliers are ID_69 in womens lacrosse and ID_3 in womens soccer. ID_69 did not appear in the incident report at all. ID_3 appeared 3 times in the incident report with Right Knee Pain/Injury Not otherwise specified - 05/08/2024, Left Quadriceps strain/tear - 03/06/2024, Right Gluteus medius/minimus strain - 10/02/2024. The observation for performance strength was 02/03/2025 which indicates it occured after all of her injuries. Both athletes also have a handful of other observations that fit into the center of the distribution.
+
+```{r}
+quantile(performance_L_nordic$Maximum.Nordic.Bilateral.Mean, probs = c(0.25, 0.5, 0.75))
+```
 
 ```{r}
 ggplot(performance_V_nordic, aes(x = Maximum.Nordic.Bilateral.Mean)) + 
