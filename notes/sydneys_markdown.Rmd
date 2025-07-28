@@ -9,7 +9,7 @@ date: "2025-07-14"
 #Date: 07/09/2025
 #Purpose: The purpose of this notebook is to house all data set transformation, cleansing, visualization, statistical analysis, and note-taking for the 2025 CU Athletic Department Sports Science Internship Program
 
-#LAST UPDATED: 07/24/2025
+#LAST UPDATED: 07/28/2025
 
 #Including helpful libraries
 library(tidyverse)
@@ -436,8 +436,6 @@ DJ_B <- Forcedecks_B %>%
   filter(Test.Type=="DJ")  #162 
   #select("anon_id", "Date", "Max.Jump.Height..cm.","Max.Contact.Time..s."."First.DJ.Contact.Time","DJ.Contact.Time...Difference.from.First", "Drop.Jump.Max.RSI..Flight.Time.Contact.Time.","Average.Drop.Jump.Max.RSI..Flight.Time.Contact.Time.","RSI.Modified..m.s.", "Max.RSI.Modified..m.s.", "Drop.Jump.Max.RSI..Flight.Time.Contact.Time.", "DJ.Max.RSI.Mod.VALD", )
 ```
-
-
 
 
 #Forcedecks (VALD) Soccer Data
@@ -956,7 +954,7 @@ ggplot(incident_l, aes(x=Position))+
 Like volleyball strong lead of non-contact injuries then any other type of injury mechanism.
 
 2. Dynamo
--NO PLOTS ATM
+-NO PLOTS 
 
 3. Forcedecks 
 Variable Distribution Plots
@@ -1177,7 +1175,6 @@ vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #11
 ```
 
 
-
 ##RESEARCH QUESTIONS*******
 #Q1: What are meaningful thresholds for strength metrics as they relate to lower body injury risk? 
 a. For example, one of our strength coaches uses 5 times body weight (kg) in Newtons for hamstring strength as a cutoff for injury risk. Is this supported by our data? 
@@ -1185,17 +1182,28 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 -looking for meaningful strength metrics to lower body injury risk
 -create thresholds for these metrics by each position in each sport
 ```{r}
+#PERFORMANCE
+#create a dataset containing all performance hip data across all sports  + combine w/ incidents
+all_perf_hip <- rbind(performance_B_hip, performance_L_hip, performance_S_hip, performance_V_hip)
+all_hip_incident <- merge(all_incident, all_perf_hip,by=c('anon_id'), na.rm=TRUE)  #1528 v 49
+#create a dataset containing all preformance nordic data across all sports  + combine w/ incidents
+all_perf_nordic <- rbind(performance_B_nordic, performance_L_nordic, performance_S_nordic, performance_V_nordic)
+```
+
+```{r}
 #GIVEN 
 #confirm or deny threshold of 5x bodyweight (kg) in N for hamstring strength for injury risk
-performance_all_nordic <-  performance_all_nordic %>%
-  mutate(strength_ratio=Maximum.Nordic.Bilateral.Mean/Athlete.Bodyweight..kg., #hamstring strength/weight
-         above_threshold=ifelse(strength_ratio>= 5, 1,0))
+all_perf_nordic <-  all_perf_nordic %>%  
+  mutate(strength_ratio=Maximum.Nordic.Bilateral.Mean/Athlete.Bodyweight..kg., 
+         above_threshold=ifelse(strength_ratio>= 5, 1,0))  #hamstring strength/weight
 
-performance_all_nordic_incident <- merge(performance_all_nordic, all_incident, by='anon_id',na.rm=TRUE)
+all_nordic_incident <- merge(all_incident, all_perf_nordic,by=c('anon_id'), na.rm=TRUE) #6491 v 48
 
 #Does being above the threshold relate to lower body injury risk?
-model <- glm(LB.Injury~ above_threshold,data=performance_all_nordic_incident, family="binomial")
+model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.24924)
+(1-odds.ratio)*100
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
 
@@ -1215,24 +1223,323 @@ CMJ_lax <- CMJ_lax %>%
 ```
 
 ```{r}
-#create a dataset containing all CMJ test data across all sports
+#FORCEDECKS
+#create a dataset containing all CMJ test data across all sports + combine w/ incidents 
 all_CMJ <- rbind(CMJ_bb, CMJ_soc, CMJ_lax, CMJ_vb) 
 all_CMJ_incident <- merge(all_incident, all_CMJ,by=c('anon_id'), na.rm=TRUE) #3471 v 67
-
-#create a dataset containing all HJ test data across all sports
+#create a dataset containing all HJ test data across all sports  + combine w/ incidents
 all_hopjump <- rbind(HJ_B, HJ_S, HJ_L, HJ_V)
 all_hopjump_incident <- merge(all_incident, all_hopjump,by=c('anon_id'), na.rm=TRUE)  #5597 v 47
-
-#create a dataset containing all IMTP test data across all sports
+#create a dataset containing all IMTP test data across all sports  + combine w/ incidents
 all_IMTP <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V)
 all_IMTP_incident <- merge(all_incident, all_IMTP,by=c('anon_id'), na.rm=TRUE) #1552 v 60
-
-#create a dataset containing all SLJ test data across all sports
+#create a dataset containing all SLJ test data across all sports  + combine w/ incidents
 all_SLJ <- rbind(SLJ_s, SLJ_l) 
 all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)  #461 v 52
 ```
 
+
 ##FINDING MY OWN THRESHOLDS
+#Preformance data
+```{r}
+#way to find threshold
+library(cutpointr)
+all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
+
+cp <- cutpointr(all_hip_incident, Bilateral.Hip.Abduction.Adduction.Ratio, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Bilateral hip abduction adduction ratio the optimal cutpoint is 1.024 with a AUC of 0.5482, sensitivity of 0.4873 and specificity of 0.6564.
+```{r}
+#other way to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hip_incident$LB.Injury,
+               predictor = all_hip_incident$Bilateral.Hip.Abduction.Adduction.Ratio, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Bilateral Hip Abduction Adduction.Ratio")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+The Bilateral Hip abduction adduction threshold is 1.0235 with a sensitivity of 0.6564365 and a specificity of 0.4873239 and an AUC of 0.5482
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret
+all_hip_incident <-  all_hip_incident %>%
+  mutate(above_threshold=ifelse(Bilateral.Hip.Abduction.Adduction.Ratio>= 1.024, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
+summary(model)
+odds.ratio=exp(-0.59674)
+(1-odds.ratio)*100
+```
+
+```{r}
+#variable IMPULSE
+library(cutpointr)
+all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
+
+cp <- cutpointr(all_hip_incident, Impulse, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Impulse the optimal cutpoint is 2699.975 with a AUC of 0.5114, sensitivity of 0.214 and specificity of 0.8451.
+```{r}
+#other way to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hip_incident$LB.Injury,
+               predictor = all_hip_incident$Impulse, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Impulse")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+The Impulse threshold is 973.1775 with a sensitivity of 0.07587383	 and a specificity of 0.9577465 and an AUC of 0.4886.
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret    #2699.975
+all_hip_incident <-  all_hip_incident %>%
+  mutate(above_threshold=ifelse(Impulse>= 973.1775, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
+summary(model)
+odds.ratio=exp(-0.6211)
+(1-odds.ratio)*100
+```
+
+#Hip.Abduction
+```{r}
+library(cutpointr)
+all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
+
+cp <- cutpointr(all_hip_incident, Hip.Abduction.MEAN.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Hip Abduction MEAN Imbalance the optimal cutpoint is 1.4 with a AUC of 0.5143, sensitivity of 0.8602 and specificity of 0.1944.
+```{r}
+#other way to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hip_incident$LB.Injury,
+               predictor = all_hip_incident$Hip.Abduction.MEAN.Imbalance, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Hip.Abduction.MEAN.Imbalance")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+The Hip.Abduction.MEAN.Imbalance threshold is 5.15 with a sensitivity of 0.6419437 and a specificity of 0.3915493	 and an AUC of 0.4857.
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret   
+all_hip_incident <-  all_hip_incident %>%
+  mutate(above_threshold=ifelse(Hip.Abduction.MEAN.Imbalance>= 1.4, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
+summary(model)
+exp(0.3950)
+```
+
+#Hip.Adduction
+```{r}
+library(cutpointr)
+all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
+
+cp <- cutpointr(all_hip_incident, Hip.Adduction.MEAN.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+For Hip Adduction MEAN Imbalance the optimal cutpoint is 4.5 with a AUC of 0.5107, sensitivity of 0.4902 and specificity of 0.5915.
+```{r}
+#other way to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_hip_incident$LB.Injury,
+               predictor = all_hip_incident$Hip.Adduction.MEAN.Imbalance, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Hip.Adduction.MEAN.Imbalance")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+The Hip.Adduction.MEAN.Imbalance threshold is 16.2 with a sensitivity of 0.9820972 and a specificity of 0.05070423 and an AUC of 0.4893.
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret   
+all_hip_incident <-  all_hip_incident %>%
+  mutate(above_threshold=ifelse(Hip.Adduction.MEAN.Imbalance>= 4.5, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
+summary(model)
+exp(0.33115)
+```
+
+#NORDIC
+```{r}
+library(cutpointr)
+all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
+
+cp <- cutpointr(all_nordic_incident, Maximum.Nordic.Bilateral.Mean, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+
+```{r}
+#other way to find threshold 
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_nordic_incident$LB.Injury,
+               predictor = all_nordic_incident$Maximum.Nordic.Bilateral.Mean, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Maximum.Nordic.Bilateral.Mean")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret   
+all_nordic_incident <-  all_nordic_incident %>%
+  mutate(above_threshold=ifelse(Maximum.Nordic.Bilateral.Mean>= 301.46, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
+summary(model)
+odds.ratio=exp(-0.18789)
+(1-odds.ratio)*100
+```
+
+```{r}
+library(cutpointr)
+all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
+
+cp <- cutpointr(all_nordic_incident, Impulse, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_nordic_incident$LB.Injury,
+               predictor = all_nordic_incident$Impulse, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Impulse")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret   
+all_nordic_incident <-  all_nordic_incident %>%
+  mutate(above_threshold=ifelse(Impulse>= 5939.035, 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
+summary(model)
+odds.ratio=exp(-0.48044)
+(1-odds.ratio)*100
+```
+
+```{r}
+library(cutpointr)
+all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
+
+cp <- cutpointr(all_nordic_incident, Nordic.MAX.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
+plot(cp)
+summary(cp)
+```
+```{r}
+library(pROC)
+#ROC object
+roc_obj <- roc(response = all_nordic_incident$LB.Injury,
+               predictor = all_nordic_incident$Nordic.MAX.Imbalance, #power
+               direction = ">")  # use "<" if higher values= high risk predict 'No'
+               # if > rel. con. power then lower risk
+#plot curve
+plot(roc_obj, main = "ROC Curve - Impulse")
+auc_value <- auc(roc_obj)
+print(auc_value)
+best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+best_coords
+
+#plot + threshold
+plot(roc_obj, main = "ROC Curve with Optimal Threshold")
+abline(a = 0, b = 1, lty = 2, col = "gray")
+points(1 - best_coords["specificity"], best_coords["sensitivity"], col = '#CFB87C', pch = 19)
+text(1 - best_coords["specificity"], best_coords["sensitivity"],
+     labels = paste("Threshold =", round(best_coords["threshold"], 2)), pos = 4)
+```
+
+```{r}
+#look at/discover/create more meaningful thresholds for strength metrics relating to LB injury risk, then test confirm threshold is valuable + interpret   
+all_nordic_incident <-  all_nordic_incident %>%
+  mutate(above_threshold=ifelse(Nordic.MAX.Imbalance>= 10.7 , 1,0))#add newfound threshold 
+#Does being above the threshold relate to lower body injury risk?
+model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
+summary(model)
+```
+
+
 #CMJ
 1. Relative.Concentric.Power.Bilateral
 ```{r}
@@ -1279,6 +1586,7 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+exp(0.19171)
 ```
 
 2. Eccentric.Concentric.Mean.Force.Ratio
@@ -1323,6 +1631,8 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.7758)
+(1-odds.ratio)*100
 ```
 
 3. Maximum Jump Height
@@ -1367,6 +1677,7 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+exp(0.97996)
 ```
 
 4. Maximum Concentric RFD
@@ -1411,6 +1722,8 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.40481)
+(1-odds.ratio)*100
 ```
 
 5. Eccentric Mean Braking Force
@@ -1455,6 +1768,8 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.74619)
+(1-odds.ratio)*100
 ```
 
 6. Maximum VALD RSI
@@ -1499,6 +1814,9 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.26597)
+(1-odds.ratio)*100
+
 ```
 
 
@@ -1545,6 +1863,9 @@ all_hopjump_incident <-  all_hopjump_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.24230)
+(1-odds.ratio)*100
+
 ```
 
 2.Mean RSI Flight Contact Time
@@ -1589,6 +1910,7 @@ all_hopjump_incident <-  all_hopjump_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
 summary(model)
+exp(0.17140)
 ```
 
 3.Best Contact Time
@@ -1633,6 +1955,8 @@ all_hopjump_incident <-  all_hopjump_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.51150)
+(1-odds.ratio)*100
 ```
 
 #Isometric Mid Thigh Pull
@@ -1678,6 +2002,8 @@ all_IMTP_incident <-  all_IMTP_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-0.4782)
+(1-odds.ratio)*100
 ```
 
 2.RPD at 200ms
@@ -1722,6 +2048,8 @@ all_IMTP_incident <-  all_IMTP_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
 summary(model)
+odds.ratio=exp(-1.26428)
+(1-odds.ratio)*100
 ```
 
 3. Force at 200ms
@@ -1766,6 +2094,7 @@ all_IMTP_incident <-  all_IMTP_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
 summary(model)
+exp(0.35840)
 ```
 
 4. DSI
@@ -1810,6 +2139,7 @@ all_IMTP_incident <-  all_IMTP_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial")
 summary(model)
+exp(0.5784)
 ```
 
 #Single Leg Jump
@@ -1855,6 +2185,7 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
+exp(1.5148)
 ```
 
 2.Jump Height Flight Time
@@ -1899,6 +2230,7 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
+exp(1.2218)
 ```
 
 3.Landing RPD
@@ -1943,6 +2275,7 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
+exp(0.6998)
 ```
 
 4.Maximum Concentric Peak Force
@@ -1987,6 +2320,7 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
+exp(0.9117)
 ```
 
 5.Concentric Impulse
@@ -2031,6 +2365,7 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
+exp(1.1798)
 ```
 
 
