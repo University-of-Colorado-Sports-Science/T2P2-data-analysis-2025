@@ -1417,6 +1417,59 @@ model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial"
 summary(model)
 odds.ratio=exp(-0.59674)
 (1-odds.ratio)*100
+
+#GRAPHICS
+#density plot
+ggplot(all_hip_incident, aes(x = Bilateral.Hip.Abduction.Adduction.Ratio, fill = LB.Injury)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = 1.024, linetype = "dashed", color = "red", size = 1) +
+  labs(title = "Density Plot: Bilateral Hip Abduction-Adduction Ratio by Injury Status",
+       x = "Bilateral Hip Abduction-Adduction Ratio",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  scale_x_continuous(limits =c(0,3))
+#boxplot
+ggplot(all_hip_incident, aes(x = LB.Injury, y = Bilateral.Hip.Abduction.Adduction.Ratio, fill = LB.Injury)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_hline(yintercept = 1.024, linetype = "dashed", color = "red") +
+  labs(title = "Boxplot: Bilateral Hip Abduction-Adduction Ratio by Injury Status",
+       x = "Lower Body Injury", y = "Bilateral Hip Abduction-Adduction Ratio") +
+  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
+                    name = "LB Injury", labels = c("No", "Yes")) +
+  scale_y_continuous(limits =c(0,3))
+
+#another count distribution
+injury_counts <- all_hip_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Bilateral Hip Abduction-Adduction Threshold",
+    x = "Bilateral Hip Abduction-Adduction Ratio Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
+
+#proportions distribution
+threshold_summary <- all_hip_incident %>%
+  group_by(above_threshold, LB.Injury) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count))
+
+ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  labs(x = "Bilateral Hip Abduction-Adduction Ratio Threshold", y = "Proportion",
+       title = "Lower Body Injury Proportions Above vs Below the Bilateral Hip Abduction-Adduction Threshold") +
+  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 ```{r}
@@ -1459,6 +1512,59 @@ model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial"
 summary(model)
 odds.ratio=exp(-0.6211)
 (1-odds.ratio)*100
+
+#GRAPHICS
+#density plot
+ggplot(all_hip_incident, aes(x = Impulse, fill = LB.Injury)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = 973.1775, linetype = "dashed", color = "red", size = 1) +
+  labs(title = "Density Plot: Impulse by Injury Status",
+       x = "Impulse",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) #+
+  #scale_x_continuous(limits =c(0,3))
+#boxplot
+ggplot(all_hip_incident, aes(x = LB.Injury, y = Impulse, fill = LB.Injury)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_hline(yintercept = 973.1775, linetype = "dashed", color = "red") +
+  labs(title = "Boxplot: Impulse by Injury Status",
+       x = "Lower Body Injury", y = "Impulse") +
+  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
+                    name = "LB Injury", labels = c("No", "Yes"))# +
+  #scale_y_continuous(limits =c(0,3))
+
+#count distribution
+injury_counts <- all_hip_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Impulse Threshold",
+    x = "Impulse Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
+
+#proportions distribution
+threshold_summary <- all_hip_incident %>%
+  group_by(above_threshold, LB.Injury) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count))
+
+ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  labs(x = "Impulse Threshold", y = "Proportion",
+       title = "Lower Body Injury Proportions Above vs Below the Impulse Threshold") +
+  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 #Hip.Abduction
@@ -1500,6 +1606,59 @@ all_hip_incident <-  all_hip_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
 summary(model)
 exp(0.3950)
+
+#GRAPHICS
+#density plot
+ggplot(all_hip_incident, aes(x = Hip.Abduction.MEAN.Imbalance, fill = LB.Injury)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = 1.4, linetype = "dashed", color = "red", size = 1) +
+  labs(title = "Density Plot: Hip Abduction Mean Imbalance by Injury Status",
+       x = "Hip Abduction Mean Imbalance",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  scale_x_continuous(limits =c(0,30))
+#boxplot
+ggplot(all_hip_incident, aes(x = LB.Injury, y = Hip.Abduction.MEAN.Imbalance, fill = LB.Injury)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_hline(yintercept = 1.4, linetype = "dashed", color = "red") +
+  labs(title = "Boxplot: Hip Abduction Mean Imbalance by Injury Status",
+       x = "Lower Body Injury", y = "Hip Abduction Mean Imbalance") +
+  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
+                    name = "LB Injury", labels = c("No", "Yes"))# +
+  #scale_y_continuous(limits =c(0,3))
+
+#count distribution
+injury_counts <- all_hip_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Hip Abduction Mean Imbalance Threshold",
+    x = "Hip Abduction Mean Imbalance Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
+
+#proportions distribution
+threshold_summary <- all_hip_incident %>%
+  group_by(above_threshold, LB.Injury) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count))
+
+ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  labs(x = "Hip Abduction Mean Imbalance Threshold", y = "Proportion",
+       title = "Lower Body Injury Proportions Above vs Below the Hip Abduction Mean Imbalance Threshold") +
+  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 #Hip.Adduction
@@ -1541,6 +1700,59 @@ all_hip_incident <-  all_hip_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_hip_incident, family="binomial")
 summary(model)
 exp(0.33115)
+
+#GRAPHICS
+#density plot
+ggplot(all_hip_incident, aes(x = Hip.Adduction.MEAN.Imbalance, fill = LB.Injury)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = 4.5, linetype = "dashed", color = "red", size = 1) +
+  labs(title = "Density Plot: Hip Adduction Mean Imbalance by Injury Status",
+       x = "Hip Adduction Mean Imbalance",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  scale_x_continuous(limits =c(0,35))
+#boxplot
+ggplot(all_hip_incident, aes(x = LB.Injury, y = Hip.Adduction.MEAN.Imbalance, fill = LB.Injury)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_hline(yintercept = 4.5, linetype = "dashed", color = "red") +
+  labs(title = "Boxplot: Hip Adduction Mean Imbalance by Injury Status",
+       x = "Lower Body Injury", y = "Hip Adduction Mean Imbalance") +
+  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
+                    name = "LB Injury", labels = c("No", "Yes"))# +
+  #scale_y_continuous(limits =c(0,3))
+
+#count distribution
+injury_counts <- all_hip_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Hip Adduction Mean Imbalance Threshold",
+    x = "Hip Adduction Mean Imbalance Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
+
+#proportions distribution
+threshold_summary <- all_hip_incident %>%
+  group_by(above_threshold, LB.Injury) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count))
+
+ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  labs(x = "Hip Adduction Mean Imbalance Threshold", y = "Proportion",
+       title = "Lower Body Injury Proportions Above vs Below the Hip Adduction Mean Imbalance Threshold") +
+  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 #NORDIC
@@ -1583,6 +1795,59 @@ model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomi
 summary(model)
 odds.ratio=exp(-0.18789)
 (1-odds.ratio)*100
+
+#GRAPHICS
+#density plot
+ggplot(all_nordic_incident, aes(x = Maximum.Nordic.Bilateral.Mean, fill = LB.Injury)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = 301.46, linetype = "dashed", color = "red", size = 1) +
+  labs(title = "Density Plot: Maximum Nordic Bilateral Mean by Injury Status",
+       x = "Maximum Nordic Bilateral Mean",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) #+
+  #scale_x_continuous(limits =c(0,35))
+#boxplot
+ggplot(all_nordic_incident, aes(x = LB.Injury, y = Maximum.Nordic.Bilateral.Mean, fill = LB.Injury)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_hline(yintercept = 301.46, linetype = "dashed", color = "red") +
+  labs(title = "Boxplot: Maximum Nordic Bilateral Mean by Injury Status",
+       x = "Lower Body Injury", y = "Maximum Nordic Bilateral Mean") +
+  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
+                    name = "LB Injury", labels = c("No", "Yes"))# +
+  #scale_y_continuous(limits =c(0,3))
+
+#count distribution
+injury_counts <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum Nordic Bilateral Mean Threshold",
+    x = "Maximum Nordic Bilateral Mean Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
+
+#proportions distribution
+threshold_summary <- all_nordic_incident %>%
+  group_by(above_threshold, LB.Injury) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count))
+
+ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) +
+  labs(x = "Maximum Nordic Bilateral Mean Threshold", y = "Proportion",
+       title = "Lower Body Injury Proportions Above vs Below the Maximum Nordic Bilateral Mean Threshold") +
+  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 ```{r}
