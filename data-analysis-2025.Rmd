@@ -20,6 +20,10 @@ library(ggplot2)
 library(lubridate)
 library(cutpointr) #threshold optimization
 library(pROC)      #threshold optimization
+library(grid)      #recreate normative data
+library(png)       #recreate normative data
+library(cowplot)   #recreate normative data
+library(magick)    #recreate normative data
 ```
 
 # Loading Datasets
@@ -1165,7 +1169,7 @@ Centers appear to have a far greater variability in force along with a lower med
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Interestingly bodyweight is most correlated with maximum force. Also interestingly Maximum.Force is equal to Nordic.Left.MAX and Average.Force is equal to Nordic.Left.MEAn, is this supposed to be the case? Not a whole lot of colinearity otherwise.
 
@@ -1191,7 +1195,7 @@ There is a big outlier in ID_3 whos mean maximum bilateral force in newtons was 
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Athlete bodyweight is less correlated with any strength measures. 
 
@@ -1217,7 +1221,7 @@ All the positions seem to have a similar distribution of maximum relative bilate
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Bodyweight is pretty correlated with Maximum.Force.
 
@@ -1245,7 +1249,7 @@ Middle Blocker|Opposite looks like it would fit more into Middle Blocker, Libero
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 
 ##MERGE DATASETS 
@@ -2627,7 +2631,7 @@ Looking 6 months in the past may be way too long need to figure out what window 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_b <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
   mutate(Start.of.Status = as.Date(Start.of.Status, format = '%m/%d/%Y'),
          End.Date = as.Date(End.Date, format = '%m/%d/%Y'),
          Time = as.numeric(End.Date - Start.of.Status)) %>%
@@ -2691,7 +2695,7 @@ merge_performance_B <- merge_performance_B %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -2767,7 +2771,7 @@ merge_hip_B <- merge_hip_B %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position,Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position,Injury, Was.Injured, Sport)
 ```
 
 ```{r}
@@ -2787,7 +2791,7 @@ Appears to be small associations in hip strength and injury status in 1 month wi
 **CMJ Data**
 ```{r}
 #merges the last_injury_B to the HJ_B by anon_id
-merge_cmj_B <- merge(last_injury_B, a, by = c('anon_id'), all = TRUE)
+merge_cmj_B <- merge(last_injury_B, b, by = c('anon_id'), all = TRUE)
 
 #creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
 merge_cmj_B <- merge_cmj_B %>%
@@ -2927,7 +2931,7 @@ Of the 17 unique players to suffer lower body injury, only 7 are represented in 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_s <- Incident_S %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -2999,7 +3003,7 @@ merge_performance_S <- merge_performance_S %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3048,7 +3052,7 @@ merge_hip_S <- merge_hip_S %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 #### Nordbord Data
@@ -3112,7 +3116,7 @@ t.test(Best.Contact.Time..ms. ~ Was.Injured, data = merge_hj_S, alternative = 'g
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_l <- Incident_L %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3181,7 +3185,7 @@ merge_performance_L <- merge_performance_L %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3228,7 +3232,7 @@ merge_hip_L <- merge_hip_L %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 ### 4. Volleyball
@@ -3237,7 +3241,7 @@ merge_hip_L <- merge_hip_L %>%
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_v <- Incident_V %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis","Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3306,7 +3310,7 @@ merge_performance_V <- merge_performance_V %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3353,7 +3357,7 @@ merge_hip_V <- merge_hip_V %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 ### Merging All Performance Data Together
@@ -4084,14 +4088,6 @@ summary(anova_result)
 ```
 
 ## Recreating Normative Data
-
-```{r}
-library(grid)
-library(png)
-library(cowplot)
-library(magick)
-```
-
 ### CMJ Data
 
 ```{r}
