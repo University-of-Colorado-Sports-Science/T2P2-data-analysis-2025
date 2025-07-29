@@ -1182,6 +1182,10 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 -looking for meaningful strength metrics to lower body injury risk
 -create thresholds for these metrics by each position in each sport
 ```{r}
+#merge all incident datasets
+all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
+  select(-c(Incident.Type,Total.Time.Injured.1))
+
 #PERFORMANCE
 #create a dataset containing all performance hip data across all sports  + combine w/ incidents
 all_perf_hip <- rbind(performance_B_hip, performance_L_hip, performance_S_hip, performance_V_hip)
@@ -1206,13 +1210,52 @@ odds.ratio=exp(-0.24924)
 (1-odds.ratio)*100
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
+```{r}
+#STACKED BAR CHART
+injury_counts <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "≥ 5x Athletes Bodyweight", "< 5x Athletes Bodyweight"),
+    Injury = ifelse(LB.Injury == 1, "Injured", "Not Injured")
+  ) %>%
+  count(Threshold, Injury)
+#Plot
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Injured"='#CFB87C',"Not Injured"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count by Hamstring Strength Threshold",
+    x = "Hamstring Strength",
+    y = "Count",
+    fill = "Lower Body Injury Status"
+  ) +
+  theme_minimal()
+
+#proportions GRAPHIC
+injury_props <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "≥ 5x Athletes Bodyweight", "< 5x Athletes Bodyweight"),
+    Injury = ifelse(LB.Injury == 1, "Injured", "Not Injured")
+  ) %>%
+  count(Threshold, Injury) %>%
+  group_by(Threshold) %>%
+  mutate(prop = n / sum(n))
+
+#plot
+ggplot(injury_props, aes(x = Threshold, y = prop, fill = Injury)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values=c("Injured"='#CFB87C',"Not Injured"='#000000'))+
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Athletes with a Lower Body Injury vs No Injury by Threshold",
+    x = "Hamstring Strength",
+    y = "Proportion",
+    fill = "Lower BodyI njury Status"
+  ) +
+  theme_minimal()
+```
 
 Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
 ```{r}
-#merge all incident datasets
-all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
-  select(-c(Incident.Type,Total.Time.Injured.1))
-
 #make all merging datasets the same # if variables 
 CMJ_bb <- CMJ_bb %>%
   select(-c(Test.Type))
