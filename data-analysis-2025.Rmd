@@ -2829,38 +2829,6 @@ ggplot(merge_cmj_B, aes(x = Force.at.Peak.Power..N., fill = Was.Injured)) +
   theme_bw()
 ```
 
-```{r}
-id_2_cmj <- merge_cmj_B %>%
-  filter(anon_id == 'ID_2') %>%
-  arrange(Date)
-
-ggplot(id_2_cmj, aes(x = Date, y = Force.at.Peak.Power..N.)) + 
-  geom_line() + 
-  geom_vline(xintercept = as.Date('2025-01-24'), color = 'red') + 
-  scale_x_date(limits = as.Date(c('2023-09-01', '2025-01-31')),
-               date_breaks = '3 months') +
-  labs(title = 'Player ID_2 Force at Peak Power Trend Before Ankle Sprain',
-       x = 'Date',
-       y = 'Force at Peak Power (N)') + 
-  theme_bw()
-```
-
-```{r}
-id_46_cmj <- merge_cmj_B %>%
-  filter(anon_id == 'ID_46') %>%
-  arrange(Date)
-
-ggplot(id_46_cmj, aes(x = Date, y = Force.at.Peak.Power..N.)) + 
-  geom_line() +
-  geom_vline(xintercept = as.Date(c('2024-12-05', '2025-01-07')), color = 'red') + 
-  scale_x_date(limits = as.Date(c('2024-07-01', '2025-01-31')),
-               date_breaks = '3 months') +
-  labs(title = 'Player ID_46 Force at Peak Power Trend Before Ankle Sprain',
-       x = 'Date',
-       y = 'Force at Peak Power (N)') + 
-  theme_bw()
-```
-
 **HJ Data**
 
 ```{r}
@@ -4137,7 +4105,7 @@ ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport.2, fill = Sport.2)
 ```
 
 ```{r}
-img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/jh_wlx.png")
+img <- image_read("jh_wlx.png")
 img_grob <- rasterGrob(img, interpolate = TRUE)
 img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
 
@@ -4236,7 +4204,7 @@ ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport.2, fill = Sport.2)) +
 ```
 
 ```{r}
-img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/hjcontact_wlx.png")
+img <- image_read("hjcontact_wlx.png")
 img_grob <- rasterGrob(img, interpolate = TRUE)
 img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
 
@@ -4348,7 +4316,7 @@ ggplot(field_all2, aes(x = Date, y = Maximum.Nordic.Bilateral.Mean)) +
 
 
 ```{r}
-img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/nordic_wlx.png")
+img <- image_read("nordic_wlx.png")
 img_grob <- rasterGrob(img, interpolate = TRUE)
 img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
 
@@ -4486,6 +4454,30 @@ ggplot(performance_all_hip, aes(x = Impulse, color = Sport.2, fill = Sport.2)) +
        fill = 'Sport Type',
        color = 'Sport Type') +
   theme_bw()
+```
+
+```{r}
+img <- image_read("add_wbb.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(performance_B_hip, aes(x = Avg.Add.Max)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Maximum Adduction Force',
+       x = 'Maximum Adduction Force (N)',
+       y = 'Density',
+       caption = 'CU Womens Basketball') +
+  geom_vline(xintercept = median(performance_B_hip$Avg.Add.Max), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(performance_B_hip$Avg.Add.Max, probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 1000, by = 50)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
 ```
 
 ```{r}
