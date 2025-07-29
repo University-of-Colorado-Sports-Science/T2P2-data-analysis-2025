@@ -4346,6 +4346,7 @@ ggplot(field_all2, aes(x = Date, y = Maximum.Nordic.Bilateral.Mean)) +
   theme_bw()
 ```
 
+
 ```{r}
 img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/nordic_wlx.png")
 img_grob <- rasterGrob(img, interpolate = TRUE)

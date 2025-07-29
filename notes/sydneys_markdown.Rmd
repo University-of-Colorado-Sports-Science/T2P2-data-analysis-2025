@@ -1253,6 +1253,7 @@ ggplot(injury_props, aes(x = Threshold, y = prop, fill = Injury)) +
   ) +
   theme_minimal()
 ```
+
 Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
 ```{r}
 #make all merging datasets the same # if variables 
