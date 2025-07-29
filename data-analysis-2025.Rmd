@@ -2631,7 +2631,7 @@ Looking 6 months in the past may be way too long need to figure out what window 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_b <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
+  dplyr::select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
   mutate(Start.of.Status = as.Date(Start.of.Status, format = '%m/%d/%Y'),
          End.Date = as.Date(End.Date, format = '%m/%d/%Y'),
          Time = as.numeric(End.Date - Start.of.Status)) %>%
@@ -2641,19 +2641,20 @@ incid_b <- Incident_B %>%
          Season. = ifelse(Season. == 'Pre-Season' | Season. == 'Summer Workouts' | Season. == 'Post-Season', 'Off-Season', Season.),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y')) %>%
   ungroup() %>%
-  select(-c('End.Date', 'Start.of.Status', 'Time')) %>%
+  dplyr::select(-c('End.Date', 'Start.of.Status', 'Time')) %>%
   group_by(across(everything())) %>%
   summarise(.groups = 'drop')
 ```
 
 ```{r, warning = FALSE}
-#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 3 months prior to first injury, between first and second injury, ect.
 last_injury_B <- incid_b %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
             Mechanism = paste0(General.Mechanism, collapse = " and "),
             Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Area = paste0(Body.Part, collapse = " and "),
             Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
   separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4'), sep = ' and ') %>%
   mutate(Injury.1.Start = as.Date(Injury.1) - months(3),
@@ -2662,12 +2663,14 @@ last_injury_B <- incid_b %>%
          Injury.4.Start = ifelse(is.na(Injury.4), NA, Injury.3)) %>%
   separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech'), sep = ' and ') %>%
   separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis'), sep = ' and ') %>%
-  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time'), sep = ' and ')
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time'), sep = ' and ') %>%
+  separate(Area, c('Injury.1.Area', 'Injury.2.Area', 'Injury.3.Area', 'Injury.4.Area'), sep = ' and ')
 ```
 
 #### Performance Data
 
 **Nordic Data**
+
 ```{r}
 #merges the last_injury_B to the performance_B_nordic by anon_id
 merge_performance_B <- merge(last_injury_B, performance_B_nordic, by = c('anon_id'), all = TRUE)
@@ -2693,55 +2696,18 @@ merge_performance_B <- merge_performance_B %>%
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Area, Was.Injured, Force.Diff.Norm, Imbalance.Diff.Norm)
 ```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball players
-ggplot(merge_performance_B, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Basketball Players',
-       y = 'Was the Player Injured',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-
-```{r}
-id_2 <- merge_performance_B %>%
-  filter(anon_id == 'ID_2') %>%
-  arrange(Date)
-
-ggplot(id_2, aes(x = Date, y = Relative.Maximum.Nordic.Bilateral.Mean)) + 
-  geom_line() + 
-  geom_vline(xintercept = as.Date('2025-01-24'), color = 'red') + 
-  scale_x_date(limits = as.Date(c('2023-10-01', '2025-01-31')),
-               date_breaks = '3 months') +
-  labs(title = 'Player ID_2 Relative Strength Trend Before Ankle Sprain',
-       x = 'Date',
-       y = 'Relative Maximum Nordic Bilateral Mean (N / kg)') + 
-  theme_bw()
-```
-
-```{r}
-id_46 <- merge_performance_B %>%
-  filter(anon_id == 'ID_46') %>%
-  arrange(Date)
-
-ggplot(id_46, aes(x = Date, y = Relative.Maximum.Nordic.Bilateral.Mean)) + 
-  geom_point() + 
-  geom_line() +
-  geom_vline(xintercept = as.Date(c('2024-12-05', '2025-01-07')), color = 'red') + 
-  scale_x_date(limits = as.Date(c('2024-07-01', '2025-01-31')),
-               date_breaks = '3 months') +
-  labs(title = 'Player ID_46 Relative Strength Trend Before Ankle Sprain',
-       x = 'Date',
-       y = 'Relative Maximum Nordic Bilateral Mean (N / kg)') + 
-  theme_bw()
-```
-
-In the Womens basketball dataset there is no performance data in the time prior to the only athlete to suffer an ACL rupture.
 
 **Hip Data**
 
@@ -2769,26 +2735,23 @@ merge_hip_B <- merge_hip_B %>%
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position,Injury, Was.Injured, Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Area, Was.Injured)
 ```
-
-```{r}
-#creates a boxplot of maximum hip force across the basketball players
-ggplot(merge_hip_B, aes(x = Hip.Abd.Left.MAX, y = Was.Injured)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Force vs Lower Body Injury',
-       y = 'Was the Player Injured',
-       x = 'Maximum Force (N)',
-       caption = 'Womens Basketball') +
-  theme_bw()
-```
-
-Appears to be small associations in hip strength and injury status in 1 month window
 
 #### Nordbord Data
+
 **CMJ Data**
+
 ```{r}
 #merges the last_injury_B to the HJ_B by anon_id
 merge_cmj_B <- merge(last_injury_B, b, by = c('anon_id'), all = TRUE)
@@ -2813,20 +2776,17 @@ merge_cmj_B <- merge_cmj_B %>%
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Countermovement.Depth..cm., Peak.Power...BM..W.kg., Landing.RFD..N.s., Eccentric.Concentric.Mean.Force.Ratio, Peak.Landing.Force..Asym...N., Peak.Power..W., Concentric.RFD..N.s., Eccentric.Mean.Braking.Force..N., Concentric.Time.to.Peak.Force..s., Landing.Net.Peak.Force...BM..N.kg., Peak.Net.Takeoff.Force...BM..N.kg., Concentric.RPD...BM..W.s.kg., Force.at.Peak.Power..N., Eccentric.Mean.Deceleration.Force..N., Eccentric.Peak.Force..N., RSI.Modified..m.s., CMJ.Stiffness..Left...N.m., CMJ.Stiffness..Right...N.m., Eccentric.Asymmetry, Concentric.Asymmetry, Peak.Landing.Asymmetry, Injury, Was.Injured)
-```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball players
-ggplot(merge_cmj_B, aes(x = Force.at.Peak.Power..N., fill = Was.Injured)) +
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Eccentric to Concentric Mean Force Ratio vs Injury',
-       x = 'Eccentric to Concentric Mean Force Ration',
-       y = 'Density') + 
-  theme_bw()
+  dplyr::select(anon_id, Date, Countermovement.Depth..cm., Peak.Power...BM..W.kg., Landing.RFD..N.s., Eccentric.Concentric.Mean.Force.Ratio, Peak.Landing.Force..Asym...N., Peak.Power..W., Concentric.RFD..N.s., Eccentric.Mean.Braking.Force..N., Concentric.Time.to.Peak.Force..s., Landing.Net.Peak.Force...BM..N.kg., Peak.Net.Takeoff.Force...BM..N.kg., Concentric.RPD...BM..W.s.kg., Force.at.Peak.Power..N., Eccentric.Mean.Deceleration.Force..N., Eccentric.Peak.Force..N., RSI.Modified..m.s., CMJ.Stiffness..Left...N.m., CMJ.Stiffness..Right...N.m., Eccentric.Asymmetry, Concentric.Asymmetry, Peak.Landing.Asymmetry, Injury, Area, Was.Injured, Sport, DSI, DSI.Bucket)
 ```
 
 **HJ Data**
@@ -2855,8 +2815,17 @@ merge_hj_B <- merge_hj_B %>%
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    TRUE ~ 'After'
   )) %>%
-  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group))
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm., Injury, Area, Was.Injured, Sport, HJ.RSI, Mean.Flight.Time..ms., Mean.Contact.Time..ms.)
 ```
 
 Need to check code, only finding 4 observations in the 3 months prior to an injury and only one player. Of the 17 unique players who suffered lower body injury in basketball players only 8 are represented in the HJ dataset. All injuries with exception of ID_40 occur at least 265 days after the observation; not very helpful.  
@@ -2887,8 +2856,17 @@ merge_imtp_B <- merge_imtp_B %>%
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
     TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    TRUE ~ 'After'
   )) %>%
-  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group))
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Baseline.Force..N., Baseline.Force..Asym...N., Peak.Vertical.Force..N., Peak.Vertical.Force...BM..N.kg., Peak.Vertical.Force..Asym...N., RFD...50ms..N.s., RFD...50ms..Asym...N.s., RFD...100ms..N.s., RFD...100ms..Asym...N.s., RFD...150ms..N.s., RFD...150ms..Asym...N.s., RFD...200ms..N.s., RFD...200ms..Asym...N.s., Net.Peak.Vertical.Force..N.s., Net.Peak.Vertical.Force..Asym...N.s., Force.at.200ms...BM..N.kg., Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym...Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym...Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym...Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym...Ns., Injury, Area, Was.Injured, Sport)
 ```
 
 Of the 17 unique players to suffer lower body injury, only 7 are represented in IMTP data. All observations occur at least 99 days prior to injury with only 11 within 180 days.  
@@ -2899,7 +2877,7 @@ Of the 17 unique players to suffer lower body injury, only 7 are represented in 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_s <- Incident_S %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  dplyr::select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -2913,13 +2891,14 @@ incid_s <- incid_s[-3,]
 ```
 
 ```{r, warning = FALSE}
-#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 3 months prior to first injury, between first and second injury, ect.
 last_injury_S <- incid_s %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
             Mechanism = paste0(General.Mechanism, collapse = " and "),
             Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Area = paste0(Body.Part, collapse = " and "),
             Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
   separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4', 'Injury.5', 'Injury.6', 'Injury.7'), sep = ' and ') %>%
   mutate(Injury.1.Start = as.Date(Injury.1) - months(3),
@@ -2931,7 +2910,8 @@ last_injury_S <- incid_s %>%
          Injury.7.Start = ifelse(is.na(Injury.4), NA, Injury.6)) %>%
   separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech', 'Injury.5.Mech', 'Injury.6.Mech', 'Injury.7.Mech'), sep = ' and ') %>%
   separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis', 'Injury.5.Diagnosis', 'Injury.6.Diagnosis', 'Injury.7.Diagnosis'), sep = ' and ') %>%
-  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ')
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ') %>%
+  separate(Area, c('Injury.1.Area', 'Injury.2.Area', 'Injury.3.Area', 'Injury.4.Area', 'Injury.5.Area', 'Injury.6.Area', 'Injury.7.Area'), sep = ' and ')
 ```
 
 #### Performance Data
@@ -2965,26 +2945,25 @@ merge_performance_S <- merge_performance_S %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Area, Was.Injured, Force.Diff.Norm, Imbalance.Diff.Norm)
 ```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the soccer players
-ggplot(merge_performance_S, aes(x = Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Soccer Players',
-       y = 'Was the Player Injured',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
-```
-
-It appears from this graph that soccer athletes that were either didn't suffer a lower body injury or at a time before 6 months prior to an injury were, on average, weaker in terms of relative bilateral force in comparison to those who did have a lower body injury occur. 
 
 **Hip Data**
 
@@ -3014,16 +2993,75 @@ merge_hip_S <- merge_hip_S %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Area, Was.Injured)
 ```
 
 #### Nordbord Data
+
+**CMJ Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_cmj_S <- merge(last_injury_S, s, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_cmj_S <- merge_cmj_S %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_cmj_S <- merge_cmj_S %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Countermovement.Depth..cm., Peak.Power...BM..W.kg., Landing.RFD..N.s., Eccentric.Concentric.Mean.Force.Ratio, Peak.Landing.Force..Asym...N., Peak.Power..W., Concentric.RFD..N.s., Eccentric.Mean.Braking.Force..N., Concentric.Time.to.Peak.Force..s., Landing.Net.Peak.Force...BM..N.kg., Peak.Net.Takeoff.Force...BM..N.kg., Concentric.RPD...BM..W.s.kg., Force.at.Peak.Power..N., Eccentric.Mean.Deceleration.Force..N., Eccentric.Peak.Force..N., RSI.Modified..m.s., CMJ.Stiffness..Left...N.m., CMJ.Stiffness..Right...N.m., Eccentric.Asymmetry, Concentric.Asymmetry, Peak.Landing.Asymmetry, Injury, Area, Was.Injured, Sport, DSI, DSI.Bucket)
+```
 
 **HJ Data**
 
@@ -3053,29 +3091,72 @@ merge_hj_S <- merge_hj_S %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm., Injury, Was.Injured)
+  dplyr::select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm., Injury, Area, Was.Injured, Sport, HJ.RSI, Mean.Flight.Time..ms., Mean.Contact.Time..ms.)
 ```
 
-```{r}
-#creates a boxplot of maximum relative bilateral force across the basketball players
-ggplot(merge_hj_S, aes(x = Best.Contact.Time..ms., fill = Was.Injured)) +
-  geom_density(alpha = 0.5) + 
-  scale_fill_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Best Contact Time vs Injury',
-       x = 'Best Contact Time (ms)',
-       y = 'Density',
-       caption = 'Womens Soccer') + 
-  theme_bw()
-```
+**IMTP Data**
 
 ```{r}
-t.test(Best.Contact.Time..ms. ~ Was.Injured, data = merge_hj_S, alternative = 'greater')
+#merges the last_injury_B to the HJ_B by anon_id
+merge_imtp_S <- merge(last_injury_S, IMTP_S, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_imtp_S <- merge_imtp_S %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_imtp_S <- merge_imtp_S %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Baseline.Force..N., Baseline.Force..Asym...N., Peak.Vertical.Force..N., Peak.Vertical.Force...BM..N.kg., Peak.Vertical.Force..Asym...N., RFD...50ms..N.s., RFD...50ms..Asym...N.s., RFD...100ms..N.s., RFD...100ms..Asym...N.s., RFD...150ms..N.s., RFD...150ms..Asym...N.s., RFD...200ms..N.s., RFD...200ms..Asym...N.s., Net.Peak.Vertical.Force..N.s., Net.Peak.Vertical.Force..Asym...N.s., Force.at.200ms...BM..N.kg., Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym...Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym...Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym...Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym...Ns., Injury, Area, Was.Injured, Sport)
 ```
 
 ### 3. Lacrosse
@@ -3084,7 +3165,7 @@ t.test(Best.Contact.Time..ms. ~ Was.Injured, data = merge_hj_S, alternative = 'g
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_l <- Incident_L %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  dplyr::select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3095,13 +3176,14 @@ incid_l <- Incident_L %>%
 ```
 
 ```{r, warning = FALSE}
-#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 3 months prior to first injury, between first and second injury, ect.
 last_injury_L <- incid_l %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
             Mechanism = paste0(General.Mechanism, collapse = " and "),
             Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Area = paste0(Body.Part, collapse = " and "),
             Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
   separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4', 'Injury.5', 'Injury.6', 'Injury.7'), sep = ' and ') %>%
   mutate(Injury.1.Start = as.Date(Injury.1) - months(3),
@@ -3113,7 +3195,8 @@ last_injury_L <- incid_l %>%
          Injury.7.Start = ifelse(is.na(Injury.4), NA, Injury.6)) %>%
   separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech', 'Injury.5.Mech', 'Injury.6.Mech', 'Injury.7.Mech'), sep = ' and ') %>%
   separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis', 'Injury.5.Diagnosis', 'Injury.6.Diagnosis', 'Injury.7.Diagnosis'), sep = ' and ') %>%
-  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ')
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ') %>%
+  separate(Area, c('Injury.1.Area', 'Injury.2.Area', 'Injury.3.Area', 'Injury.4.Area', 'Injury.5.Area', 'Injury.6.Area', 'Injury.7.Area'), sep = ' and ')
 ```
 
 #### Performance Data
@@ -3147,23 +3230,24 @@ merge_performance_L <- merge_performance_L %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
-```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the soccer players
-ggplot(merge_performance_L, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Lacrosse Players',
-       y = 'Was the Player Injured',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Area, Was.Injured, Force.Diff.Norm, Imbalance.Diff.Norm)
 ```
 
 **Hip Data**
@@ -3194,13 +3278,170 @@ merge_hip_L <- merge_hip_L %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Area, Was.Injured)
+```
+
+#### Nordbord Data
+
+**CMJ Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_cmj_L <- merge(last_injury_L, l, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_cmj_L <- merge_cmj_L %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_cmj_L <- merge_cmj_L %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Countermovement.Depth..cm., Peak.Power...BM..W.kg., Landing.RFD..N.s., Eccentric.Concentric.Mean.Force.Ratio, Peak.Landing.Force..Asym...N., Peak.Power..W., Concentric.RFD..N.s., Eccentric.Mean.Braking.Force..N., Concentric.Time.to.Peak.Force..s., Landing.Net.Peak.Force...BM..N.kg., Peak.Net.Takeoff.Force...BM..N.kg., Concentric.RPD...BM..W.s.kg., Force.at.Peak.Power..N., Eccentric.Mean.Deceleration.Force..N., Eccentric.Peak.Force..N., RSI.Modified..m.s., CMJ.Stiffness..Left...N.m., CMJ.Stiffness..Right...N.m., Eccentric.Asymmetry, Concentric.Asymmetry, Peak.Landing.Asymmetry, Injury, Area, Was.Injured, Sport, DSI, DSI.Bucket)
+```
+
+**HJ Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_hj_L <- merge(last_injury_L, HJ_L, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_hj_L <- merge_hj_L %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_hj_L <- merge_hj_L %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm., Injury, Area, Was.Injured, Sport, HJ.RSI, Mean.Flight.Time..ms., Mean.Contact.Time..ms.)
+```
+
+**IMTP Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_imtp_L <- merge(last_injury_L, IMTP_L, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_imtp_L <- merge_imtp_L %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_imtp_L <- merge_imtp_L %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Baseline.Force..N., Baseline.Force..Asym...N., Peak.Vertical.Force..N., Peak.Vertical.Force...BM..N.kg., Peak.Vertical.Force..Asym...N., RFD...50ms..N.s., RFD...50ms..Asym...N.s., RFD...100ms..N.s., RFD...100ms..Asym...N.s., RFD...150ms..N.s., RFD...150ms..Asym...N.s., RFD...200ms..N.s., RFD...200ms..Asym...N.s., Net.Peak.Vertical.Force..N.s., Net.Peak.Vertical.Force..Asym...N.s., Force.at.200ms...BM..N.kg., Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym...Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym...Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym...Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym...Ns., Injury, Area, Was.Injured, Sport)
 ```
 
 ### 4. Volleyball
@@ -3209,7 +3450,7 @@ merge_hip_L <- merge_hip_L %>%
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_v <- Incident_V %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis","Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  dplyr::select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3220,13 +3461,14 @@ incid_v <- Incident_V %>%
 ```
 
 ```{r, warning = FALSE}
-#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 6 months prior to first injury, between first and second injury, ect.
+#creates a dataset from the incident report that separates out all the dates for lower body injuries to classify observations based on their relation to lower body injuries: within 3 months prior to first injury, between first and second injury, ect.
 last_injury_V <- incid_v %>%
   arrange(Date) %>%
   group_by(anon_id) %>%
   summarize(Dates.Final = paste0(Date, collapse = " and "),
             Mechanism = paste0(General.Mechanism, collapse = " and "),
             Injury = paste0(Final.Diagnosis, collapse = " and "),
+            Area = paste0(Body.Part, collapse = " and "),
             Time.Injured = paste0(Total.Time.Injured, collapse = " and ")) %>%
   separate(Dates.Final, c('Injury.1', 'Injury.2', 'Injury.3', 'Injury.4', 'Injury.5', 'Injury.6', 'Injury.7'), sep = ' and ') %>%
   mutate(Injury.1.Start = as.Date(Injury.1) - months(3),
@@ -3238,7 +3480,8 @@ last_injury_V <- incid_v %>%
          Injury.7.Start = ifelse(is.na(Injury.4), NA, Injury.6)) %>%
   separate(Mechanism, c('Injury.1.Mech', 'Injury.2.Mech', 'Injury.3.Mech', 'Injury.4.Mech', 'Injury.5.Mech', 'Injury.6.Mech', 'Injury.7.Mech'), sep = ' and ') %>%
   separate(Injury, c('Injury.1.Diagnosis', 'Injury.2.Diagnosis', 'Injury.3.Diagnosis', 'Injury.4.Diagnosis', 'Injury.5.Diagnosis', 'Injury.6.Diagnosis', 'Injury.7.Diagnosis'), sep = ' and ') %>%
-  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ')
+  separate(Time.Injured, c('Injury.1.Time', 'Injury.2.Time', 'Injury.3.Time', 'Injury.4.Time', 'Injury.5.Time', 'Injury.6.Time', 'Injury.7.Time'), sep = ' and ') %>%
+  separate(Area, c('Injury.1.Area', 'Injury.2.Area', 'Injury.3.Area', 'Injury.4.Area', 'Injury.5.Area', 'Injury.6.Area', 'Injury.7.Area'), sep = ' and ')
 ```
 
 #### Performance Data
@@ -3272,23 +3515,24 @@ merge_performance_V <- merge_performance_V %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
-```
-
-```{r}
-#creates a boxplot of maximum relative bilateral force across the soccer players
-ggplot(merge_performance_V, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y = Was.Injured)) +
-  geom_boxplot(fill = '#CFB87C', color = 'black') + 
-  labs(title = 'Distribution of Maximum Relative Bilateral Force Across Lacrosse Players',
-       y = 'Was the Player Injured',
-       x = 'Maximum Relative Bilateral Force (N / kg)') +
-  theme_bw()
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Area, Was.Injured, Force.Diff.Norm, Imbalance.Diff.Norm)
 ```
 
 **Hip Data**
@@ -3319,13 +3563,170 @@ merge_hip_V <- merge_hip_V %>%
     Group == 2 ~ Injury.2.Diagnosis,
     Group == 3 ~ Injury.3.Diagnosis,
     Group == 4 ~ Injury.4.Diagnosis,
-    Group == 5 ~ Injury.1.Diagnosis,
-    Group == 6 ~ Injury.2.Diagnosis,
-    Group == 7 ~ Injury.3.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
+  dplyr::select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Area, Was.Injured)
+```
+
+#### Nordbord Data
+
+**CMJ Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_cmj_V <- merge(last_injury_V, v, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_cmj_V <- merge_cmj_V %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_cmj_V <- merge_cmj_V %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Countermovement.Depth..cm., Peak.Power...BM..W.kg., Landing.RFD..N.s., Eccentric.Concentric.Mean.Force.Ratio, Peak.Landing.Force..Asym...N., Peak.Power..W., Concentric.RFD..N.s., Eccentric.Mean.Braking.Force..N., Concentric.Time.to.Peak.Force..s., Landing.Net.Peak.Force...BM..N.kg., Peak.Net.Takeoff.Force...BM..N.kg., Concentric.RPD...BM..W.s.kg., Force.at.Peak.Power..N., Eccentric.Mean.Deceleration.Force..N., Eccentric.Peak.Force..N., RSI.Modified..m.s., CMJ.Stiffness..Left...N.m., CMJ.Stiffness..Right...N.m., Eccentric.Asymmetry, Concentric.Asymmetry, Peak.Landing.Asymmetry, Injury, Area, Was.Injured, Sport, DSI, DSI.Bucket)
+```
+
+**HJ Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_hj_V <- merge(last_injury_V, HJ_V, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_hj_V <- merge_hj_V %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_hj_V <- merge_hj_V %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Corrected.Standing.Weight..Kg., Mean.RSI..Flight.Contact.Time., Active.Stiffness..N.m., Best.Average.Force..N., Best.Average.Force..Asym...N., Best.Time.to.Peak.Force..ms., Best.Contact.Time..ms., Best.Flight.Time..ms., Best.Impulse..N.s., Best.Peak.Force..N., Best.Peak.Force..Asym...N., Mean.Average.Force..N., Mean.Average.Force..Asym...N., Mean.Landing.RFD..N.s., Mean.Landing.RFD..Asym...N.s., Stiffness.Fatigue...., Stiffness.Fatigue..Asym....., Max.Jump.Height..cm., Injury, Area, Was.Injured, Sport, HJ.RSI, Mean.Flight.Time..ms., Mean.Contact.Time..ms.)
+```
+
+**IMTP Data**
+
+```{r}
+#merges the last_injury_B to the HJ_B by anon_id
+merge_imtp_V <- merge(last_injury_V, IMTP_V, by = c('anon_id'), all = TRUE)
+
+#creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
+merge_imtp_V <- merge_imtp_V %>%
+  mutate(Group = case_when(
+    is.na(Injury.1) | Date < Injury.1.Start ~ '0',
+    !is.na(Injury.1) & Date >= Injury.1.Start & Date <= Injury.1 ~ '1',
+    !is.na(Injury.2) & Date >= Injury.2.Start & Date <= Injury.2 ~ '2',
+    !is.na(Injury.3) & Date >= Injury.3.Start & Date <= Injury.3 ~ '3',
+    !is.na(Injury.4) & Date >= Injury.4.Start & Date <= Injury.4 ~ '4',
+    !is.na(Injury.5) & Date >= Injury.5.Start & Date <= Injury.5 ~ '5',
+    !is.na(Injury.6) & Date >= Injury.6.Start & Date <= Injury.6 ~ '6',
+    !is.na(Injury.7) & Date >= Injury.7.Start & Date <= Injury.7 ~ '7',
+    TRUE ~ 'After')) %>%
+  filter(Group != 'After')
+
+#condenses observations based on group and player summarizing means of variables of interest
+merge_imtp_V <- merge_imtp_V %>%
+  mutate(Injury = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Diagnosis,
+    Group == 2 ~ Injury.2.Diagnosis,
+    Group == 3 ~ Injury.3.Diagnosis,
+    Group == 4 ~ Injury.4.Diagnosis,
+    Group == 5 ~ Injury.5.Diagnosis,
+    Group == 6 ~ Injury.6.Diagnosis,
+    Group == 7 ~ Injury.7.Diagnosis,
+    TRUE ~ 'After'
+  ),
+  Area = case_when(
+    Group == 0 ~ 'None',
+    Group == 1 ~ Injury.1.Area,
+    Group == 2 ~ Injury.2.Area,
+    Group == 3 ~ Injury.3.Area,
+    Group == 4 ~ Injury.4.Area,
+    Group == 5 ~ Injury.5.Area,
+    Group == 6 ~ Injury.6.Area,
+    Group == 7 ~ Injury.7.Area,
+    TRUE ~ 'After'
+  )) %>%
+  mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
+  dplyr::select(anon_id, Date, Baseline.Force..N., Baseline.Force..Asym...N., Peak.Vertical.Force..N., Peak.Vertical.Force...BM..N.kg., Peak.Vertical.Force..Asym...N., RFD...50ms..N.s., RFD...50ms..Asym...N.s., RFD...100ms..N.s., RFD...100ms..Asym...N.s., RFD...150ms..N.s., RFD...150ms..Asym...N.s., RFD...200ms..N.s., RFD...200ms..Asym...N.s., Net.Peak.Vertical.Force..N.s., Net.Peak.Vertical.Force..Asym...N.s., Force.at.200ms...BM..N.kg., Absolute.Impulse.50ms..Ns., Absolute.Impulse.50ms..Asym...Ns., Absolute.Impulse.100ms..Ns., Absolute.Impulse.100ms..Asym...Ns., Absolute.Impulse.150ms..Ns., Absolute.Impulse.150ms..Asym...Ns., Absolute.Impulse.200ms..Ns., Absolute.Impulse.200ms..Asym...Ns., Injury, Area, Was.Injured, Sport)
 ```
 
 ### Merging All Performance Data Together
@@ -3367,6 +3768,53 @@ ggplot(hip_all_injury, aes(Avg.Abd.Mean, fill = Was.Injured)) +
   geom_density(alpha = 0.4) +
   facet_wrap(~Sport.2) + 
   theme_bw()
+```
+
+**HJ Data**
+
+```{r}
+#creating a dataset containing performance data accross all sports
+hj_all_injury <- rbind(merge_hj_B, merge_hj_S, merge_hj_L, merge_hj_V) %>%
+  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
+         Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'),
+         Ankle = ifelse(Area == 'Ankle', 'Yes', 'No'),
+         Knee = ifelse(Area == 'Knee', 'Yes', 'No'))
+
+field_ankle <- hj_all_injury %>%
+  filter(Sport.2 == 'Field' & Area %in% c('Ankle', 'None')) %>%
+  mutate(Was.Injured. = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)))
+```
+
+```{r}
+ggplot(data = field_ankle, aes(Max.Jump.Height..cm., fill = Was.Injured)) + 
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c('#CFB87C', '#000000')) +
+  geom_vline(xintercept = 21.5725, color = 'red', linetype = 'dashed') +
+  labs(title = 'Max Jump Height vs Ankle Injury',
+       x = 'Max Jump Height (cm)',
+       y = 'Density',
+       fill = 'Ankle Injury',
+       caption = 'CU Womens Soccer and Lacrosse') +
+  scale_x_continuous(breaks = seq(0, 50, 4)) + 
+  theme_bw()
+```
+
+```{r}
+roc_obj <- roc(response = field_ankle$Was.Injured, predictor = field_ankle$Max.Jump.Height..cm., direction = ">")
+
+plot(roc_obj, print.auc = TRUE, col = "#CFB87C", main = "ROC Curve for Training Load")
+```
+
+```{r}
+roc_coords <- coords(roc_obj, x = "best", best.method = "youden", ret = c("threshold", "sensitivity", "specificity"))
+
+print(roc_coords)
+```
+
+```{r}
+model <- glm(Was.Injured. ~ Mean.Contact.Time..ms., data = field_ankle, family = 'binomial')
+
+summary(model)
 ```
 
 

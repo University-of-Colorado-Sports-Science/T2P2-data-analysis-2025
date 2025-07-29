@@ -2958,14 +2958,15 @@ hip_all_injury <- rbind(merge_hip_B, merge_hip_S, merge_hip_L, merge_hip_V) %>%
 ```
 
 ```{r}
-ggplot(data = hip_all_injury %>% filter(Area %in% c('None', 'Ankle')), aes(Avg.Add.Mean, fill = Was.Injured)) + 
+ggplot(data = hip_all_injury, aes(Hip.Abduction.MEAN.Imbalance, fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
+  geom_vline(xintercept = 1.4, color = 'red', linetype = 'dashed') + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   labs(title = 'Hip Abduction Average Force vs Lower Body Injury',
        x = 'Average Bilateral Force (N)',
        y = 'Density',
        fill = 'Lower Body Injury') +
-  facet_wrap(~Sport.2) +
+#  facet_wrap(~Sport.2) +
   theme_bw()
 ```
 
@@ -3191,22 +3192,40 @@ hj_all_injury <- rbind(merge_hj_B, merge_hj_S, merge_hj_L, merge_hj_V) %>%
          Knee = ifelse(Area == 'Knee', 'Yes', 'No'))
 
 field_ankle <- hj_all_injury %>%
-  filter(Sport.2 == 'Field' & Ankle == 'Yes')
+  filter(Sport.2 == 'Field' & Area %in% c('Ankle', 'None')) %>%
+  mutate(Was.Injured. = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)))
 ```
 
-%>% filter(Area %in% c('Ankle', 'None'))
-
 ```{r}
-ggplot(data = hj_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(Mean.Flight.Time..ms., fill = Was.Injured)) + 
+ggplot(data = field_ankle, aes(Max.Jump.Height..cm., fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Hop Jump RSI vs Lower Body Injury',
-       x = 'Hop Jump RSI',
+  geom_vline(xintercept = 21.5725, color = 'red', linetype = 'dashed') +
+  labs(title = 'Max Jump Height vs Ankle Injury',
+       x = 'Max Jump Height (cm)',
        y = 'Density',
-       fill = 'Lower Body Injury') +
-  facet_wrap(~Sport.2) +
-  scale_x_continuous(breaks = seq(0, 7, 0.2)) + 
+       fill = 'Ankle Injury',
+       caption = 'CU Womens Soccer and Lacrosse') +
+  scale_x_continuous(breaks = seq(0, 50, 4)) + 
   theme_bw()
+```
+
+```{r}
+roc_obj <- roc(response = field_ankle$Was.Injured, predictor = field_ankle$Max.Jump.Height..cm., direction = ">")
+
+plot(roc_obj, print.auc = TRUE, col = "#CFB87C", main = "ROC Curve for Training Load")
+```
+
+```{r}
+roc_coords <- coords(roc_obj, x = "best", best.method = "youden", ret = c("threshold", "sensitivity", "specificity"))
+
+print(roc_coords)
+```
+
+```{r}
+model <- glm(Was.Injured. ~ Mean.Contact.Time..ms., data = field_ankle, family = 'binomial')
+
+summary(model)
 ```
 
 ```{r}
