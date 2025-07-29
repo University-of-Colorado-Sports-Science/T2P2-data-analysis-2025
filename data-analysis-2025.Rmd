@@ -18,6 +18,12 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(lubridate)
+library(cutpointr) #threshold optimization
+library(pROC)      #threshold optimization
+library(grid)      #recreate normative data
+library(png)       #recreate normative data
+library(cowplot)   #recreate normative data
+library(magick)    #recreate normative data
 ```
 
 # Loading Datasets
@@ -1163,7 +1169,7 @@ Centers appear to have a far greater variability in force along with a lower med
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_B_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Interestingly bodyweight is most correlated with maximum force. Also interestingly Maximum.Force is equal to Nordic.Left.MAX and Average.Force is equal to Nordic.Left.MEAn, is this supposed to be the case? Not a whole lot of colinearity otherwise.
 
@@ -1189,7 +1195,7 @@ There is a big outlier in ID_3 whos mean maximum bilateral force in newtons was 
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_S_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Athlete bodyweight is less correlated with any strength measures. 
 
@@ -1215,7 +1221,7 @@ All the positions seem to have a similar distribution of maximum relative bilate
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_L_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 Bodyweight is pretty correlated with Maximum.Force.
 
@@ -1243,7 +1249,7 @@ Middle Blocker|Opposite looks like it would fit more into Middle Blocker, Libero
 
 ```{r}
 #creates a correlation matrix of all numerical values
-cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
+#cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 ```
 
 ##MERGE DATASETS 
@@ -1251,36 +1257,6 @@ cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 -dynamo not to be added 
 These are grouped by all data of each sport. Do not know if will use as we want to compare metrics across sports. Keep Just in case.
 ```{r}
-#ALL BASKETBALL DATA incident_b(128) performance_B_hip(109) performance_B_nordic (521), CMJ_bb(194), HJ_B(409), IMTP_B (50)
-basketball_merge <- merge(performance_B_nordic,performance_B_hip, by=c('anon_id','Date'), all=TRUE)
-basket_merge <- merge(basketball_merge,incident_b, by=c('anon_id','Date'), all=TRUE)
-bball_merge <- merge(basket_merge,HJ_B, by=c('anon_id','Date'), all=TRUE)
-bb_merge <- merge(bball_merge,CMJ_bb, by=c('anon_id','Date'), all=TRUE)
-bb_merge_full <- merge(bball_merge,IMTP_B, by=c('anon_id','Date'), all=TRUE)  #1092 by 110
-
-#filter out duplicated rows 
-```
-```{r}
-#ALL SOCCER DATA 
-soccer_merge <- merge(performance_S_nordic,performance_S_hip, by=c('anon_id','Date'), all=TRUE)
-soc_merge <- merge(soccer_merge,incident_s, by=c('anon_id','Date'), all=TRUE)
-s_merge <- merge(soc_merge,HJ_S, by=c('anon_id','Date'), all=TRUE)
-S_merge <- merge(s_merge,CMJ_soc, by=c('anon_id','Date'), all=TRUE)
-soc_merge_full <- merge(S_merge,IMTP_S, by=c('anon_id','Date'), all=TRUE)   #1233 by 168
-soccer_merge_full <- merge(soc_merge_full, SLJ_s, by=c('anon_id','Date'), all=TRUE)  #1233 by 168
-#ALL LACROSSE DATA    
-lacrosse_merge <- merge(performance_L_nordic,performance_L_hip, by=c('anon_id','Date'), all=TRUE)
-lax_merge <- merge(lacrosse_merge,incident_l, by=c('anon_id','Date'), all=TRUE)
-l_merge <- merge(lax_merge,HJ_L, by=c('anon_id','Date'), all=TRUE)
-L_merge <- merge(l_merge,CMJ_lax, by=c('anon_id','Date'), all=TRUE)
-lax_merge_full <- merge(L_merge,IMTP_L, by=c('anon_id','Date'), all=TRUE)   #1390 by 145
-lacrosse_merge_full <- merge(lax_merge_full, SLJ_L, by=c('anon_id','Date'), all=TRUE) 
-#ALL VOLLEYBALL DATA
-volleyball_merge <- merge(performance_V_nordic,performance_V_hip, by=c('anon_id','Date'), all=TRUE)
-vball_merge <- merge(volleyball_merge,incident_v, by=c('anon_id','Date'), all=TRUE)
-vb_merge <- merge(vball_merge,HJ_V, by=c('anon_id','Date'), all=TRUE)
-v_merge <- merge(vb_merge,CMJ_vb, by=c('anon_id','Date'), all=TRUE)
-vball_merge_full <- merge(v_merge,IMTP_V, by=c('anon_id','Date'), all=TRUE)  #1140 by 143
 #basketball incidents + tests 
 B_incid_CMJtest <- merge(incident_b, CMJ_bb, by=c('anon_id'),all=TRUE) #1312 by 61 
 B_incid_HJtest <- merge(incident_b, HJ_B, by=c('anon_id'),all=TRUE)    #2020 by 46
@@ -1300,6 +1276,10 @@ a. For example, one of our strength coaches uses 5 times body weight (kg) in New
 -looking for meaningful strength metrics to lower body injury risk
 -create thresholds for these metrics by each position in each sport
 ```{r}
+#merge all incident datasets
+all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
+  select(-c(Incident.Type,Total.Time.Injured.1))
+
 #PERFORMANCE
 #create a dataset containing all performance hip data across all sports  + combine w/ incidents
 all_perf_hip <- rbind(performance_B_hip, performance_L_hip, performance_S_hip, performance_V_hip)
@@ -1322,13 +1302,52 @@ model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomi
 summary(model)
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
+```{r}
+#STACKED BAR CHART
+injury_counts <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "≥ 5x Athletes Bodyweight", "< 5x Athletes Bodyweight"),
+    Injury = ifelse(LB.Injury == 1, "Injured", "Not Injured")
+  ) %>%
+  count(Threshold, Injury)
+#Plot
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Injured"='#CFB87C',"Not Injured"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count by Hamstring Strength Threshold",
+    x = "Hamstring Strength",
+    y = "Count",
+    fill = "Lower Body Injury Status"
+  ) +
+  theme_minimal()
+
+#proportions GRAPHIC
+injury_props <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "≥ 5x Athletes Bodyweight", "< 5x Athletes Bodyweight"),
+    Injury = ifelse(LB.Injury == 1, "Injured", "Not Injured")
+  ) %>%
+  count(Threshold, Injury) %>%
+  group_by(Threshold) %>%
+  mutate(prop = n / sum(n))
+
+#plot
+ggplot(injury_props, aes(x = Threshold, y = prop, fill = Injury)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values=c("Injured"='#CFB87C',"Not Injured"='#000000'))+
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Proportion of Athletes with a Lower Body Injury vs No Injury by Threshold",
+    x = "Hamstring Strength",
+    y = "Proportion",
+    fill = "Lower BodyI njury Status"
+  ) +
+  theme_minimal()
+```
 
 Combining forcedecks data with incident data to compare injuries across all sports with forcedeck strength information.
 ```{r}
-#merge all incident datasets
-all_incident <- bind_rows(incident_b, incident_s, incident_v,incident_l) %>%
-  select(-c(Incident.Type,Total.Time.Injured.1))
-
 #make all merging datasets the same # if variables 
 CMJ_bb <- CMJ_bb %>%
   select(-c(Test.Type))
@@ -1360,7 +1379,6 @@ all_SLJ_incident <- merge(all_incident, all_SLJ,by=c('anon_id'), na.rm=TRUE)  #4
 #Preformance data
 ```{r}
 #way to find threshold
-library(cutpointr)
 all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
 
 cp <- cutpointr(all_hip_incident, Bilateral.Hip.Abduction.Adduction.Ratio, LB.Injury, method=maximize_metric, metric=youden)
@@ -1369,8 +1387,7 @@ summary(cp)
 ```
 For Bilateral hip abduction adduction ratio the optimal cutpoint is 1.024 with a AUC of 0.5482, sensitivity of 0.4873 and specificity of 0.6564.
 ```{r}
-#other way to find threshold 
-library(pROC)
+#other way to find threshold
 #ROC object
 roc_obj <- roc(response = all_hip_incident$LB.Injury,
                predictor = all_hip_incident$Bilateral.Hip.Abduction.Adduction.Ratio, #power
@@ -1404,7 +1421,6 @@ odds.ratio=exp(-0.59674)
 
 ```{r}
 #variable IMPULSE
-library(cutpointr)
 all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
 
 cp <- cutpointr(all_hip_incident, Impulse, LB.Injury, method=maximize_metric, metric=youden)
@@ -1414,7 +1430,6 @@ summary(cp)
 For Impulse the optimal cutpoint is 2699.975 with a AUC of 0.5114, sensitivity of 0.214 and specificity of 0.8451.
 ```{r}
 #other way to find threshold 
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hip_incident$LB.Injury,
                predictor = all_hip_incident$Impulse, #power
@@ -1448,7 +1463,6 @@ odds.ratio=exp(-0.6211)
 
 #Hip.Abduction
 ```{r}
-library(cutpointr)
 all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
 
 cp <- cutpointr(all_hip_incident, Hip.Abduction.MEAN.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
@@ -1458,7 +1472,6 @@ summary(cp)
 For Hip Abduction MEAN Imbalance the optimal cutpoint is 1.4 with a AUC of 0.5143, sensitivity of 0.8602 and specificity of 0.1944.
 ```{r}
 #other way to find threshold 
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hip_incident$LB.Injury,
                predictor = all_hip_incident$Hip.Abduction.MEAN.Imbalance, #power
@@ -1491,7 +1504,6 @@ exp(0.3950)
 
 #Hip.Adduction
 ```{r}
-library(cutpointr)
 all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
 
 cp <- cutpointr(all_hip_incident, Hip.Adduction.MEAN.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
@@ -1501,7 +1513,6 @@ summary(cp)
 For Hip Adduction MEAN Imbalance the optimal cutpoint is 4.5 with a AUC of 0.5107, sensitivity of 0.4902 and specificity of 0.5915.
 ```{r}
 #other way to find threshold 
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hip_incident$LB.Injury,
                predictor = all_hip_incident$Hip.Adduction.MEAN.Imbalance, #power
@@ -1534,7 +1545,6 @@ exp(0.33115)
 
 #NORDIC
 ```{r}
-library(cutpointr)
 all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
 
 cp <- cutpointr(all_nordic_incident, Maximum.Nordic.Bilateral.Mean, LB.Injury, method=maximize_metric, metric=youden)
@@ -1544,7 +1554,6 @@ summary(cp)
 
 ```{r}
 #other way to find threshold 
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_nordic_incident$LB.Injury,
                predictor = all_nordic_incident$Maximum.Nordic.Bilateral.Mean, #power
@@ -1577,7 +1586,6 @@ odds.ratio=exp(-0.18789)
 ```
 
 ```{r}
-library(cutpointr)
 all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
 
 cp <- cutpointr(all_nordic_incident, Impulse, LB.Injury, method=maximize_metric, metric=youden)
@@ -1585,7 +1593,6 @@ plot(cp)
 summary(cp)
 ```
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_nordic_incident$LB.Injury,
                predictor = all_nordic_incident$Impulse, #power
@@ -1618,7 +1625,6 @@ odds.ratio=exp(-0.48044)
 ```
 
 ```{r}
-library(cutpointr)
 all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
 
 cp <- cutpointr(all_nordic_incident, Nordic.MAX.Imbalance, LB.Injury, method=maximize_metric, metric=youden)
@@ -1626,7 +1632,6 @@ plot(cp)
 summary(cp)
 ```
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_nordic_incident$LB.Injury,
                predictor = all_nordic_incident$Nordic.MAX.Imbalance, #power
@@ -1661,7 +1666,6 @@ summary(model)
 1. Relative.Concentric.Power.Bilateral
 ```{r}
 #way 1 to find threshold
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 #Error: "Relative.Concentric.Power.Bilateral", :method should be a function
@@ -1673,7 +1677,6 @@ For Relative Concentric Power Bilateral the optimal cutpoint is 10.3 with a AUC 
 
 ```{r}
 #way 2 to find threshold 
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Relative.Concentric.Power.Bilateral, #power
@@ -1707,7 +1710,6 @@ summary(model)
 
 2. Eccentric.Concentric.Mean.Force.Ratio
 ```{r}
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 cp <- cutpointr(all_CMJ_incident, Eccentric.Concentric.Mean.Force.Ratio , LB.Injury, method=maximize_metric, metric=youden)
@@ -1717,7 +1719,6 @@ summary(cp)
 For Eccentric Concentric Mean Force Ratio the optimal cutpoint is 53.5025 with a AUC of 0.4938, sensitivity of 0.49398 and specificity of 0.6202.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Eccentric.Concentric.Mean.Force.Ratio , #power
@@ -1751,7 +1752,6 @@ summary(model)
 
 3. Maximum Jump Height
 ```{r}
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 cp <- cutpointr(all_CMJ_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
@@ -1761,7 +1761,6 @@ summary(cp)
 For Maximum Jump Height the optimal cutpoint is 41.379 with a AUC of 0.5063, sensitivity of 0.0957 and specificity of 09618.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Max.Jump.Height..cm. , #power
@@ -1795,7 +1794,6 @@ summary(model)
 
 4. Maximum Concentric RFD
 ```{r}
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 cp <- cutpointr(all_CMJ_incident, Max.Concentric.RPD..N.s. , LB.Injury, method=maximize_metric, metric=youden)
@@ -1805,7 +1803,6 @@ summary(cp)
 For Maximum Concentric RFD the optimal cutpoint is 15784.34 with a AUC of 0.527, sensitivity of 0.6034 and specificity of 0.4963.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Max.Concentric.RPD..N.s. , #power
@@ -1839,7 +1836,6 @@ summary(model)
 
 5. Eccentric Mean Braking Force
 ```{r}
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 cp <- cutpointr(all_CMJ_incident, Eccentric.Mean.Braking.Force..N. , LB.Injury, method=maximize_metric, metric=youden)
@@ -1849,7 +1845,6 @@ summary(cp)
 For Eccentric Mean Braking Force the optimal cutpoint is 783.517 with a AUC of 0.5989, sensitivity of 0.7146 and specificity of 0.4572.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Eccentric.Mean.Braking.Force..N. , #power
@@ -1883,7 +1878,6 @@ summary(model)
 
 6. Maximum VALD RSI
 ```{r}
-library(cutpointr)
 all_CMJ_incident$LB.Injury <- as.factor(all_CMJ_incident$LB.Injury)
 
 cp <- cutpointr(all_CMJ_incident, Max.RSI.Modified.VALD , LB.Injury, method=maximize_metric, metric=youden)
@@ -1893,7 +1887,6 @@ summary(cp)
 For Maximum VALD RSI the optimal cutpoint is 0.4 with a AUC of 0.5263, sensitivity of 0.6562 and specificity of 0.406.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_CMJ_incident$LB.Injury,
                predictor = all_CMJ_incident$Max.RSI.Modified.VALD , #power
@@ -1929,7 +1922,6 @@ summary(model)
 #Hop Jump
 1.Maximum Jump Height
 ```{r}
-library(cutpointr)
 all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
 
 cp <- cutpointr(all_hopjump_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
@@ -1939,7 +1931,6 @@ summary(cp)
 For Maximum Jump Height the optimal cutpoint is 25.489 with a AUC of 0.533, sensitivity of 0.5263 and specificity of 0.5342.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
                predictor = all_hopjump_incident$Max.Jump.Height..cm. , #power
@@ -1973,7 +1964,6 @@ summary(model)
 
 2.Mean RSI Flight Contact Time
 ```{r}
-library(cutpointr)
 all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
 
 cp <- cutpointr(all_hopjump_incident, Mean.RSI..Flight.Contact.Time. , LB.Injury, method=maximize_metric, metric=youden)
@@ -1983,7 +1973,6 @@ summary(cp)
 For Mean RSI Flight Contact Time the optimal cutpoint is 2.441 with a AUC of 0.5086, sensitivity of 0.4017 and specificity of 0.6387.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
                predictor = all_hopjump_incident$Mean.RSI..Flight.Contact.Time. , #power
@@ -2017,7 +2006,6 @@ summary(model)
 
 3.Best Contact Time
 ```{r}
-library(cutpointr)
 all_hopjump_incident$LB.Injury <- as.factor(all_hopjump_incident$LB.Injury)
 
 cp <- cutpointr(all_hopjump_incident, Best.Contact.Time..ms. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2027,7 +2015,6 @@ summary(cp)
 For Best Contact Time the optimal cutpoint is 0.184 with a AUC of 0.5442, sensitivity of 0.6949 and specificity of 0.4227.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_hopjump_incident$LB.Injury,
                predictor = all_hopjump_incident$Best.Contact.Time..ms. , #power
@@ -2062,7 +2049,6 @@ summary(model)
 #Isometric Mid Thigh Pull
 1. Peak Vertical Force
 ```{r}
-library(cutpointr)
 all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
 
 cp <- cutpointr(all_IMTP_incident, Peak.Vertical.Force...BM..N.kg. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2072,7 +2058,6 @@ summary(cp)
 ForPeak Vertical Force the optimal cutpoint is 30.813 with a AUC of 0.5116, sensitivity of 0.8214 and specificity of 0.2596.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
                predictor = all_IMTP_incident$Peak.Vertical.Force...BM..N.kg. , #power
@@ -2194,7 +2179,6 @@ summary(model)
 
 4. DSI
 ```{r}
-library(cutpointr)
 all_IMTP_incident$LB.Injury <- as.factor(all_IMTP_incident$LB.Injury)
 
 cp <- cutpointr(all_IMTP_incident, DSI , LB.Injury, method=maximize_metric, metric=youden)
@@ -2204,7 +2188,6 @@ summary(cp)
 For DSI the optimal cutpoint is 0.59 with a AUC of 0.5005, sensitivity of 0.2291 and specificity of 0.8571.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_IMTP_incident$LB.Injury,
                predictor = all_IMTP_incident$DSI , #power
@@ -2239,7 +2222,6 @@ summary(model)
 #Single Leg Jump
 1.Maximum Jump Height
 ```{r}
-library(cutpointr)
 all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
 
 cp <- cutpointr(all_SLJ_incident, Max.Jump.Height..cm. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2249,7 +2231,6 @@ summary(cp)
 For Maximum Jump Height the optimal cutpoint is 19.223 with a AUC of 0.6147, sensitivity of 0.3625 and specificity of 0.8889.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
                predictor = all_SLJ_incident$Max.Jump.Height..cm. , #power
@@ -2283,7 +2264,6 @@ summary(model)
 
 2.Jump Height Flight Time
 ```{r}
-library(cutpointr)
 all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
 
 cp <- cutpointr(all_SLJ_incident, Jump.Height..Flight.Time...cm. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2293,7 +2273,6 @@ summary(cp)
 For Jump Height Flight Time the optimal cutpoint is 17.027 with a AUC of 0.5904, sensitivity of 0.3265 and specificity of 0.875.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
                predictor = all_SLJ_incident$Jump.Height..Flight.Time...cm. , #power
@@ -2327,7 +2306,6 @@ summary(model)
 
 3.Landing RPD
 ```{r}
-library(cutpointr)
 all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
 
 cp <- cutpointr(all_SLJ_incident, Landing.RFD..N.s. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2337,7 +2315,6 @@ summary(cp)
 For Landing RPD the optimal cutpoint is =31061.16 with a AUC of 0.5347, sensitivity of 0.4987 and specificity of 0.6806.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
                predictor = all_SLJ_incident$Landing.RFD..N.s. , #power
@@ -2371,7 +2348,6 @@ summary(model)
 
 4.Maximum Concentric Peak Force
 ```{r}
-library(cutpointr)
 all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
 
 cp <- cutpointr(all_SLJ_incident, Max.Concentric.Peak.Force..N. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2381,7 +2357,6 @@ summary(cp)
 For Maximum Concentric Peak Force the optimal cutpoint is 1243.319 with a AUC of 0.546, sensitivity of 0.8149 and specificity of 0.3611.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
                predictor = all_SLJ_incident$Max.Concentric.Peak.Force..N. , #power
@@ -2415,7 +2390,6 @@ summary(model)
 
 5.Concentric Impulse
 ```{r}
-library(cutpointr)
 all_SLJ_incident$LB.Injury <- as.factor(all_SLJ_incident$LB.Injury)
 
 cp <- cutpointr(all_SLJ_incident, Concentric.Impulse..Ns. , LB.Injury, method=maximize_metric, metric=youden)
@@ -2425,7 +2399,6 @@ summary(cp)
 For Concentric Impulse the optimal cutpoint is 123.136 with a AUC of 0.5224, sensitivity of 0.1954 and specificity of 0.9306.
 
 ```{r}
-library(pROC)
 #ROC object
 roc_obj <- roc(response = all_SLJ_incident$LB.Injury,
                predictor = all_SLJ_incident$Concentric.Impulse..Ns. , #power
@@ -2456,7 +2429,6 @@ all_SLJ_incident <-  all_SLJ_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_SLJ_incident, family="binomial")
 summary(model)
 ```
-
 
 
 
@@ -2534,14 +2506,14 @@ HJ_B['HSI'] <- ifelse(HJ_B$anon_id %in% hsi_injury_B, 'Yes', 'No')
 
 ```{r}
 #creating a boxplot displaying distribution of relative maximum bilateral mean in those who experienced lower body injury vs those that did not
-ggplot(data = HJ_B, aes(x = Max.Jump.Height..cm., fill = LB)) + 
+ggplot(data = all_hopjump_incident, aes(x = Max.Jump.Height..cm., fill = LB.Injury)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', 'black')) + 
   labs(title = 'Distribution of Contact Time vs Lower Body Injury (All Time)',
        y = 'Density',
        x = 'Best Contact Time (ms)',
        fill = 'Lower Body Injury',
-       caption = 'Womens Basketball') +
+       caption = 'All Womens Sports') +
   theme_bw()
 ```
 
@@ -2659,7 +2631,7 @@ Looking 6 months in the past may be way too long need to figure out what window 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_b <- Incident_B %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.", "End.Date", "Start.of.Status") %>%
   mutate(Start.of.Status = as.Date(Start.of.Status, format = '%m/%d/%Y'),
          End.Date = as.Date(End.Date, format = '%m/%d/%Y'),
          Time = as.numeric(End.Date - Start.of.Status)) %>%
@@ -2723,7 +2695,7 @@ merge_performance_B <- merge_performance_B %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -2799,7 +2771,7 @@ merge_hip_B <- merge_hip_B %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position,Injury, Was.Injured, Sport)
 ```
 
 ```{r}
@@ -2819,7 +2791,7 @@ Appears to be small associations in hip strength and injury status in 1 month wi
 **CMJ Data**
 ```{r}
 #merges the last_injury_B to the HJ_B by anon_id
-merge_cmj_B <- merge(last_injury_B, a, by = c('anon_id'), all = TRUE)
+merge_cmj_B <- merge(last_injury_B, b, by = c('anon_id'), all = TRUE)
 
 #creates a variable called Group that groups based on date within injury intervals and outputs 'After' if the date is after all injuries, and then these are omitted
 merge_cmj_B <- merge_cmj_B %>%
@@ -2959,7 +2931,7 @@ Of the 17 unique players to suffer lower body injury, only 7 are represented in 
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_s <- Incident_S %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3031,7 +3003,7 @@ merge_performance_S <- merge_performance_S %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3080,7 +3052,7 @@ merge_hip_S <- merge_hip_S %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 #### Nordbord Data
@@ -3144,7 +3116,7 @@ t.test(Best.Contact.Time..ms. ~ Was.Injured, data = merge_hj_S, alternative = 'g
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_l <- Incident_L %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3213,7 +3185,7 @@ merge_performance_L <- merge_performance_L %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3260,7 +3232,7 @@ merge_hip_L <- merge_hip_L %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 ### 4. Volleyball
@@ -3269,7 +3241,7 @@ merge_hip_L <- merge_hip_L %>%
 #selects variables of interest, filters for lower body injuries, and gets rid of duplicate observations
 incid_v <- Incident_V %>%
   filter(Body.Part %in% lower_body) %>%
-  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis", "Result.of.Sport.Participation", "Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
+  select("anon_id", "Position", "Date.of.Injury...Onset.of.symptoms", "Side", "Body.Part", "Tissue.Type", "Pathology.Type", "OSICS14.Code", "OSICS10.Code", "OSICS10.Diagnosis", "Final.Diagnosis","Recurrence.of.Injury", "Injury.Prognosis", "General.Mechanism", "Specific.Mechanism", "FinalDiagnosisIncidentDate", "Total.Time.Injured", "Season.") %>%
   group_by(anon_id, Date.of.Injury...Onset.of.symptoms) %>%
   mutate(Total.Time.Injured = sum(Total.Time.Injured, na.rm = TRUE),
          Date = as.Date(Date.of.Injury...Onset.of.symptoms, format = '%m/%d/%Y'),
@@ -3338,7 +3310,7 @@ merge_performance_V <- merge_performance_V %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Nordic.Left.MEAN, Nordic.Right.MEAN, Nordic.MEAN.Imbalance, Nordic.Left.MAX, Nordic.Right.MAX, Nordic.MAX.Imbalance, Trend, Nordic...Difference.from.First.Test, Maximum.Nordic.Bilateral.Mean, Relative.Maximum.Nordic.Bilateral.Mean, Position, Injury, Was.Injured,Sport)
 ```
 
 ```{r}
@@ -3385,7 +3357,7 @@ merge_hip_V <- merge_hip_V %>%
     TRUE ~ 'After'
   )) %>%
   mutate(Was.Injured = ifelse(Group == 1 | Group == 2 | Group == 3 | Group == 4 | Group == 5 | Group == 6 | Group == 7, 'Yes', Group)) %>%
-  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Sport, Injury, Was.Injured)
+  select(anon_id, Date, Athlete.Bodyweight..kg., Maximum.Force, Average.Force, Impulse, Hip.Abd.Left.MEAN, Hip.Abd.Right.MEAN, Hip.Abduction.MEAN.Imbalance, Hip.Abd.Left.MAX, Hip.Abd.Right.MAX, Hip.Abduction.MAX.Imbalance, Hip.Add.Left.MEAN, Hip.Add.Right.MEAN, Hip.Adduction.MEAN.Imbalance, Hip.Add.Left.MAX, Hip.Add.Right.MAX, Hip.Adduction.MAX.Imbalance, Bilateral.Hip.Abduction.Adduction.Ratio, Position, Injury, Was.Injured, Sport)
 ```
 
 ### Merging All Performance Data Together
@@ -4116,14 +4088,6 @@ summary(anova_result)
 ```
 
 ## Recreating Normative Data
-
-```{r}
-library(grid)
-library(png)
-library(cowplot)
-library(magick)
-```
-
 ### CMJ Data
 
 ```{r}
@@ -4381,6 +4345,7 @@ ggplot(field_all2, aes(x = Date, y = Maximum.Nordic.Bilateral.Mean)) +
   scale_x_date(date_breaks = '6 months') +
   theme_bw()
 ```
+
 
 ```{r}
 img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/nordic_wlx.png")
