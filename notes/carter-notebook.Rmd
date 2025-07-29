@@ -2882,27 +2882,17 @@ performance_all_injury <- rbind(merge_performance_B, merge_performance_S, merge_
   mutate(Thresh = ifelse(Relative.Maximum.Nordic.Bilateral.Mean >= 5, 'Yes', 'No'),
          Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
          Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'))
-
-performance_all_injury %>%
-  group_by(Mechanism) %>%
-  summarize(`Relative Max Bilateral Force` = mean(Relative.Maximum.Nordic.Bilateral.Mean),
-            `Max Bilateral Force` = mean(Maximum.Nordic.Bilateral.Mean),
-            `Percent Diff Norm` = mean(Force.Diff.Norm),
-            `Imbalance` = mean(Nordic.MEAN.Imbalance),
-            `Trend` = mean(Trend),
-            `Impulse` = mean(Impulse))
 ```
 
 ```{r}
 #creates a density plot that compares a metric across the different sports
-ggplot(data = performance_all_injury, aes(Maximum.Nordic.Bilateral.Mean, fill = Was.Injured)) + 
+ggplot(data = performance_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(Impulse, fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   labs(title = 'Nordic Impulse vs Lower Body Injury',
        x = 'Impulse',
        y = 'Density',
        fill = 'Lower Body Injury') +
-  facet_wrap(~Sport) +
   theme_bw()
 ```
 
@@ -2965,28 +2955,17 @@ hip_all_injury <- rbind(merge_hip_B, merge_hip_S, merge_hip_L, merge_hip_V) %>%
          Relative.Add.Max = Avg.Add.Max / Athlete.Bodyweight..kg.,
          Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
          Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'))
-
-hip_all_injury %>%
-  group_by(Mechanism) %>%
-  summarize(`Average Abduction Mean` = mean(Avg.Abd.Mean),
-            `Average Abduction Max` = mean(Avg.Abd.Max),
-            `Average Adduction Mean` = mean(Avg.Add.Mean),
-            `Average Adduction Max` = mean(Avg.Add.Max),
-            `Relative Abduction Mean` = mean(Relative.Abd.Mean),
-            `Relative Abduction Max` = mean(Relative.Abd.Max),
-            `Relative Adduction Mean` = mean(Relative.Add.Mean),
-            `Relative Adduction Max` = mean(Relative.Add.Max))
 ```
 
 ```{r}
-ggplot(data = hip_all_injury, aes(Avg.Add.Mean, fill = Mechanism)) + 
+ggplot(data = hip_all_injury %>% filter(Area %in% c('None', 'Ankle')), aes(Avg.Add.Mean, fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
-#  scale_fill_manual(values = c('#CFB87C', '#000000')) +
+  scale_fill_manual(values = c('#CFB87C', '#000000')) +
   labs(title = 'Hip Abduction Average Force vs Lower Body Injury',
        x = 'Average Bilateral Force (N)',
        y = 'Density',
        fill = 'Lower Body Injury') +
-#  facet_wrap(~Sport) +
+  facet_wrap(~Sport.2) +
   theme_bw()
 ```
 
@@ -3029,16 +3008,6 @@ The average abduction mean is significant for basketball and almost for lacrosse
 cmj_all_injury <- rbind(merge_cmj_B, merge_cmj_S, merge_cmj_L, merge_cmj_V) %>%
   mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
          Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'))
-
-cmj_all_injury %>%
-  group_by(Mechanism) %>%
-  summarize(`Depth` = mean(Countermovement.Depth..cm.),
-            `Peak Power w/ BW` = mean(Peak.Power...BM..W.kg.),
-            `Peak Power` = mean(Peak.Power..W.),
-            `E/C Ratio` = mean(Eccentric.Concentric.Mean.Force.Ratio),
-            `C Time to Peak` = mean(Concentric.Time.to.Peak.Force..s.),
-            `Peak Net Takeoff` = mean(Peak.Net.Takeoff.Force...BM..N.kg.),
-            `DSI` = mean(DSI))
 ```
 
 ```{r}
@@ -3115,7 +3084,7 @@ fisher.test(injury_matrix_v)
 ```
 
 ```{r}
-ggplot(data = cmj_all_injury, aes(DSI, fill = Was.Injured)) + 
+ggplot(data = cmj_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(RSI.Modified..m.s., fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   labs(title = 'DSI vs Lower Body Injury',
@@ -3123,8 +3092,7 @@ ggplot(data = cmj_all_injury, aes(DSI, fill = Was.Injured)) +
        y = 'Density',
        fill = 'Lower Body Injury',
        caption = 'Field Sports') +
-  facet_wrap(~Sport) + 
-  geom_vline(xintercept = 0.665, color = 'red', linetype = 'dashed') +
+  facet_wrap(~Sport.2) + 
   theme_bw()
 ```
 
@@ -3221,6 +3189,9 @@ hj_all_injury <- rbind(merge_hj_B, merge_hj_S, merge_hj_L, merge_hj_V) %>%
          Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'),
          Ankle = ifelse(Area == 'Ankle', 'Yes', 'No'),
          Knee = ifelse(Area == 'Knee', 'Yes', 'No'))
+
+field_ankle <- hj_all_injury %>%
+  filter(Sport.2 == 'Field' & Ankle == 'Yes')
 ```
 
 %>% filter(Area %in% c('Ankle', 'None'))
@@ -3233,7 +3204,7 @@ ggplot(data = hj_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(Mean.F
        x = 'Hop Jump RSI',
        y = 'Density',
        fill = 'Lower Body Injury') +
-#  facet_wrap(~Sport) +
+  facet_wrap(~Sport.2) +
   scale_x_continuous(breaks = seq(0, 7, 0.2)) + 
   theme_bw()
 ```
@@ -3375,40 +3346,36 @@ cmj <- rbind(b, s, l, v) %>%
 #summarizes important metrics
 cmj %>%
   group_by(Sport) %>%
-  summarize(`Average Depth` = mean(Countermovement.Depth..cm.),
-            `Peak Power w/ BW` = mean(Peak.Power...BM..W.kg.),
-            `Peak Power` = mean(Peak.Power..W.),
-            `Ecc/Conc Force Ratio` = mean(Eccentric.Concentric.Mean.Force.Ratio),
-            `Ecc Braking Force` = mean(Eccentric.Mean.Braking.Force..N.),
-            `Conc Time to Peak` = mean(Concentric.Time.to.Peak.Force..s.),
-            `DSI` = mean(DSI))
+  summarize(`DSI` = mean(DSI),
+            `Modified RSI` = mean(RSI.Modified..m.s.),
+            `Jump Height` = mean(Jump.Height..Imp.Mom...cm.))
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport, fill = Sport)) + 
+ggplot(cmj, aes(x = RSI.Modified..m.s., color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Jump Height Across Sports',
-       x = 'Jump Height (cm)',
+  scale_fill_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  scale_color_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  labs(title = 'Distribution of Modified RSI Across Sports',
+       x = 'Modified RSI (m/s)',
        y = 'Density') +
-  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.05)) +
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(cmj, aes(x = Jump.Height..Imp.Mom...cm., color = Sport.2, fill = Sport.2)) + 
+ggplot(cmj, aes(x = DSI, color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Jump Height Across Sports',
-       x = 'Jump Height (cm)',
+  labs(title = 'Distribution of DSI Across Sports',
+       x = 'DSI',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
-  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 5)) +
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.1)) +
   theme_bw()
 ```
 
@@ -3472,7 +3439,7 @@ Most differences are very significant between court and field sports.
 All sports are statistically signficantly away from each other. Volleyball <<< Basketball <<< Soccer <<< Lacrosse
 
 ```{r}
-t.test(Force.at.Peak.Power..N. ~ Sport, data = cmj %>% filter(Sport %in% c('Soccer', 'Lacrosse')))
+t.test(Jump.Height..Imp.Mom...cm. ~ Sport, data = cmj %>% filter(Sport %in% c('Basketball', 'Soccer')))
 ```
 
 ### 1. HJ Data
@@ -3481,18 +3448,23 @@ t.test(Force.at.Peak.Power..N. ~ Sport, data = cmj %>% filter(Sport %in% c('Socc
 #creating a dataset containing all information for CMJ
 hj <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
   mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'))
+
+hj %>%
+  group_by(Sport) %>%
+  summarize(`RSI` = mean(HJ.RSI),
+            `Contact Time` = mean(Mean.Contact.Time..ms.))
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport, fill = Sport)) + 
+ggplot(hj, aes(x = HJ.RSI, color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Mean Contact Time Across Sports',
-       x = 'Mean Contact Time (s)',
+  scale_fill_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  scale_color_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  labs(title = 'Distribution of Hop Jump RSI Across Sports',
+       x = 'Hop Jump RSI (m/s)',
        y = 'Density') +
-  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.2)) + 
   theme_bw()
 ```
 
@@ -3560,22 +3532,14 @@ performance_all_nordic %>%
             `Average Relative Maximum Nordic Bilateral Mean` = mean(Relative.Maximum.Nordic.Bilateral.Mean),
             `Average Mean Imbalance` = mean(Nordic.MEAN.Imbalance),
             `Average Max Imbalance` = mean(Nordic.MAX.Imbalance))
-
-#creates a subset of just the court sports
-field_all <- performance_all_nordic %>%
-  filter(Sport.2 == 'Field')
-
-#creates a subset of just the court sports
-court_all <- performance_all_nordic %>%
-  filter(Sport.2 == 'Court')
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
 ggplot(performance_all_nordic, aes(x = Maximum.Nordic.Bilateral.Mean, color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
+  scale_fill_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  scale_color_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
   labs(title = 'Distribution of Maximum Nordic Force Across Sports',
        x = 'Maximum Bilateral Average Force (N)',
        y = 'Density') +
@@ -3748,29 +3712,77 @@ performance_all_hip %>%
 ```
 
 ```{r}
+hip_B <- performance_B_hip %>%
+  mutate(Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
+         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2)
+
+hip_S <- performance_S_hip %>%
+  mutate(Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
+         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2)
+
+hip_L <- performance_L_hip %>%
+  mutate(Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
+         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2)
+
+hip_V <- performance_V_hip %>%
+  mutate(Avg.Abd.Max = (Hip.Abd.Left.MAX + Hip.Abd.Right.MAX) / 2,
+         Avg.Add.Max = (Hip.Add.Left.MAX + Hip.Add.Right.MAX) / 2)
+```
+
+```{r}
 #creates a density plot of hip abduction across the 4 sports
-ggplot(performance_all_hip %>% filter(Bilateral.Hip.Abduction.Adduction.Ratio < 2), aes(x = Bilateral.Hip.Abduction.Adduction.Ratio, fill = Sport, color = Sport)) +
+ggplot(performance_all_hip, aes(x = Avg.Add.Max, fill = Sport, color = Sport)) +
   geom_density(alpha = 0.4) + 
-  scale_fill_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  scale_color_manual(values = c('#CFB87C', '#666666', '#000000', '#8C7853')) +
-  labs(title = 'Distribution of Abd/Add Impulse Across Sports',
-       x = 'Impulse',
+  scale_fill_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  scale_color_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
+  labs(title = 'Distribution of Maximum Average Adduction Force Across Sports',
+       x = 'Maximum Average Adduction Force (N)',
        y = 'Density') +
+  scale_x_continuous(breaks = seq(0, 1000, 50)) +
   theme_bw()
 ```
 
 ```{r}
 #creates a density plot for maximum bilateral force across sport type
-ggplot(performance_all_hip, aes(x = Impulse, color = Sport.2, fill = Sport.2)) + 
+ggplot(performance_all_hip, aes(x = Avg.Abd.Max, color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Abd/Add Impulse Across Sports',
-       x = 'Impulse',
+  labs(title = 'Distribution of Maximum Average Abduction Force Across Sports',
+       x = 'Maximum Average Abduction Force (N)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
+  scale_x_continuous(breaks = seq(0, 1000, 50)) +
   theme_bw()
+```
+
+```{r}
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/abd_wlx.png")
+img_grob <- rasterGrob(img, interpolate = TRUE)
+img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
+
+p <- ggplot(hip_V, aes(x = Avg.Abd.Max)) + 
+  geom_density(fill = '#CFB87C') +
+  labs(title = 'Distribution of Maximum Average Abduction Force Across Sports',
+       x = 'Maximum Average Abduction Force (N)',
+       y = 'Density',
+       caption = 'CU Womens Volleyball') +
+  geom_vline(xintercept = median(hip_V$Avg.Abd.Max), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(hip_V$Avg.Abd.Max, probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 1000, by = 50)) + 
+  theme_bw()
+
+combined <- plot_grid(p, img_plot, 
+                      rel_widths = c(1.5, 1), 
+                      nrow = 1,       # <- horizontal layout
+                      align = "h")    # <- align vertically 
+
+combined
+```
+
+```{r}
+quantile(hip_L$Avg.Abd.Max, probs = c(0.25, 0.5, 0.75))
 ```
 
 ```{r}
@@ -3820,5 +3832,5 @@ summary(anova_result)
 Using anova test there is no statistical evidence of a difference in means between sports for average/max hip adduction imbalance or bilateral hip abduction adduction ratio. There is however very slight statistical evidence of a difference in means between the sports for average/max hip abduction imbalance. 
 
 ```{r}
-t.test(Impulse ~ Sport, data = performance_all_hip %>% filter(Sport %in% c('Soccer', 'Basketball')))
+t.test(Relative.Abd.Max ~ Sport, data = performance_all_hip %>% filter(Sport %in% c('Lacrosse', 'Soccer')))
 ```
