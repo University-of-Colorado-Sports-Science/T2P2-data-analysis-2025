@@ -2352,6 +2352,32 @@ summary(model)
 odds.ratio=exp(-0.24230)
 (1-odds.ratio)*100
 
+#density plot
+ggplot(all_hopjump_incident, aes(x = Max.Jump.Height..cm., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 25.489, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 26, y = 0.082, label = "Threshold = 25.489", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum Jump Height",
+       x = "Maximum Jump Height (cm)",
+       y = "Density") +
+  scale_x_continuous(limits =c(0,50))
+
+#count distribution
+injury_counts <- all_hopjump_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum Jump Height Threshold",
+    x = "Maximum Jump Height Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 2.Mean RSI Flight Contact Time
@@ -2397,6 +2423,33 @@ all_hopjump_incident <-  all_hopjump_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binomial")
 summary(model)
 exp(0.17140)
+
+#density plot
+ggplot(all_hopjump_incident, aes(x = Mean.RSI..Flight.Contact.Time., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 2.441, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 1.4, y = 0.08, label = "Threshold = 2.441", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Average RSI Flight Contact Time",
+       x = "Average RSI Flight Contact Time (ms)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,50))
+
+#count distribution
+injury_counts <- all_hopjump_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Average RSI Flight Contact Time Threshold",
+    x = "Average RSI Flight Contact Time Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 3.Best Contact Time
@@ -2443,6 +2496,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_hopjump_incident, family="binom
 summary(model)
 odds.ratio=exp(-0.51150)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_hopjump_incident, aes(x = Best.Contact.Time..ms., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 0.184, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 0.2, y =10.2, label = "Threshold = 0.184", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Best Contact Time",
+       x = "Best Contact Time (ms)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,50))
+
+#count distribution
+injury_counts <- all_hopjump_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Best Contact Time Threshold",
+    x = "Best Contact Time Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 #Isometric Mid Thigh Pull
@@ -2490,6 +2570,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial
 summary(model)
 odds.ratio=exp(-0.4782)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_IMTP_incident, aes(x = Peak.Vertical.Force...BM..N.kg., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 30.813, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 31, y =5, label = "Threshold = 30.813", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Peak Vertical Force BM (N/kg)",
+       x = "Peak Vertical Force BM (N/kg)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,50))
+
+#count distribution
+injury_counts <- all_IMTP_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Peak Vertical Force Threshold",
+    x = "Peak Vertical Force Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 2.RPD at 200ms
@@ -2536,6 +2643,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_IMTP_incident, family="binomial
 summary(model)
 odds.ratio=exp(-1.26428)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_IMTP_incident, aes(x = RFD...200ms..N.s., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 8357.859, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 8000, y =5, label = "Threshold = 8357.859", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Rate of Development 200ms (N/s)",
+       x = "Rate of Development 200ms (N/s)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,50))
+
+#count distribution
+injury_counts <- all_IMTP_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Rate of Development 200ms Threshold",
+    x = "Rate of Development 200ms Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 3. Force at 200ms
