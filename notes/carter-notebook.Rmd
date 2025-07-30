@@ -456,6 +456,7 @@ CMJ_bb <- CMJ_b %>%
 b <- Forcedecks_B %>%
   filter(Test.Type == 'CMJ') %>%
   dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  select(-c('DSI', 'DSI.Bucket')) %>%
   na.omit()
 
 #calculates differences from norm and makes Date a date object
@@ -561,6 +562,7 @@ CMJ_soc <- CMJ_s %>%
 s <- Forcedecks_S %>%
   filter(Test.Type == 'CMJ') %>%
   dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  select(-c('DSI', 'DSI.Bucket')) %>%
   na.omit()
 
 #calculates differences from norm and makes Date a date object
@@ -706,6 +708,7 @@ CMJ_lax <- CMJ_l %>%
 l <- Forcedecks_L %>%
   filter(Test.Type == 'CMJ') %>%
   dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  select(-c('DSI', 'DSI.Bucket')) %>%
   na.omit()
 
 #calculates differences from norm and makes Date a date object
@@ -852,6 +855,7 @@ CMJ_vb <- CMJ_v %>%
 v <- Forcedecks_V %>%
   filter(Test.Type == 'CMJ') %>%
   dplyr::select("anon_id","Date","Position","Test.Type","Countermovement.Depth..cm.","Peak.Power...BM..W.kg.","Landing.RFD..N.s.", "Eccentric.Concentric.Mean.Force.Ratio", "Peak.Landing.Force..Asym...N.", "Peak.Power..W.", "Concentric.RFD..N.s.", "Concentric.RFD..Left...N.s.","Concentric.RFD..Right...N.s.", "Concentric.Time.to.Peak.Force..s.", "Eccentric.Mean.Braking.Force..N.", "Landing.Net.Peak.Force...BM..N.kg.", "Peak.Net.Takeoff.Force...BM..N.kg.", "Concentric.RPD...BM..W.s.kg.", "Force.at.Peak.Power..N.", "Eccentric.Mean.Deceleration.Force..N.", "Eccentric.Peak.Force..N.", "RSI.Modified..m.s.", "CMJ.Stiffness..Left...N.m.", "CMJ.Stiffness..Right...N.m.", "Eccentric.Asymmetry","Concentric.Asymmetry", "Peak.Landing.Asymmetry", "DSI", "DSI.Bucket", "Eccentric.Peak.Power...BM..W.kg.", "Jump.Height..Imp.Mom...cm.", "Eccentric.Duration..s.", "Eccentric.Deceleration.Impulse..Ns.") %>%
+  select(-c('DSI', 'DSI.Bucket')) %>%
   na.omit()
 
 #calculates differences from norm and makes Date a date object
@@ -1160,20 +1164,19 @@ cor(performance_V_nordic[,-c(1, 2, 4, 5, 15, 19, 20)])
 
 ```{r}
 #creating lists of athletes that suffered any lower body injuries, acl injury, HSI
-lb_injury_B <- incident_B %>%
-  filter(LB.Injury == 1) %>%
+lb_injury_B <- incid_b %>%
   distinct(anon_id) %>%
   pull(anon_id)
-acl_injury_B <- incident_B %>%
-  filter(ACL == 1) %>%
+acl_injury_B <- incid_b %>%
+  filter(OSICS14.Code == 'KLA') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-hsi_injury_B <- incident_B %>%
-  filter(HSI == 1) %>%
+hsi_injury_B <- incid_b %>%
+  filter(OSICS14.Code == 'TM1') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-ankle_injury_B <- incident_B %>%
-  filter(Body.Part. == 'Ankle') %>%
+ankle_injury_B <- incid_b %>%
+  filter(Body.Part == 'Ankle') %>%
   distinct(anon_id) %>%
   pull(anon_id)
 ```
@@ -1208,7 +1211,7 @@ ggplot(data = performance_B_nordic %>% filter(Position == 'Forward'), aes(x = Ma
 b['LB'] <- ifelse(b$anon_id %in% lb_injury_B, 'Yes', 'No')
 b['ACL'] <- ifelse(b$anon_id %in% acl_injury_B, 'Yes', 'No')
 b['HSI'] <- ifelse(b$anon_id %in% hsi_injury_B, 'Yes', 'No')
-b['Sport'] <- 'Basketball'
+b['Ankle'] <- ifelse(b$anon_id %in% ankle_injury_B, 'Yes', 'No')
 ```
 
 ```{r}
@@ -1271,20 +1274,19 @@ ggplot(data = HJ_B, aes(x = Mean.Flight.Time..ms., fill = Ankle)) +
 
 ```{r}
 #creating lists of athletes that suffered any lower body injuries, acl injury, HSI
-lb_injury_S <- incident_S %>%
-  filter(LB.Injury == 1) %>%
+lb_injury_S <- incid_s %>%
   distinct(anon_id) %>%
   pull(anon_id)
-acl_injury_S <- incident_S %>%
-  filter(ACL == 1) %>%
+acl_injury_S <- incid_s %>%
+  filter(OSICS14.Code == 'KLA') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-hsi_injury_S <- incident_S %>%
-  filter(HSI == 1) %>%
+hsi_injury_S <- incid_s %>%
+  filter(OSICS14.Code == 'TM1') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-ankle_injury_S <- incident_S %>%
-  filter(Body.Part. == 'Ankle') %>%
+ankle_injury_S <- incid_s %>%
+  filter(Body.Part == 'Ankle') %>%
   distinct(anon_id) %>%
   pull(anon_id)
 ```
@@ -1311,7 +1313,7 @@ ggplot(performance_S_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 s['LB'] <- ifelse(s$anon_id %in% lb_injury_S, 'Yes', 'No')
 s['ACL'] <- ifelse(s$anon_id %in% acl_injury_S, 'Yes', 'No')
 s['HSI'] <- ifelse(s$anon_id %in% hsi_injury_S, 'Yes', 'No')
-s['Sport'] <- 'Soccer'
+s['Ankle'] <- ifelse(s$anon_id  %in% ankle_injury_S, 'Yes', 'No')
 ```
 
 ```{r}
@@ -1348,20 +1350,19 @@ ggplot(data = HJ_S, aes(x = Mean.Contact.Time..ms., fill = Ankle)) +
 
 ```{r}
 #creating lists of athletes that suffered any lower body injuries, acl injury, HSI
-lb_injury_L <- incident_L %>%
-  filter(LB.Injury == 1) %>%
+lb_injury_L <- incid_l %>%
   distinct(anon_id) %>%
   pull(anon_id)
-acl_injury_L <- incident_L %>%
-  filter(ACL == 1) %>%
+acl_injury_L <- incid_l %>%
+  filter(OSICS14.Code == 'KLA') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-hsi_injury_L <- incident_L %>%
-  filter(HSI == 1) %>%
+hsi_injury_L <- incid_l %>%
+  filter(OSICS14.Code == 'TM1') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-ankle_injury_L <- incident_L %>%
-  filter(Body.Part. == 'Ankle') %>%
+ankle_injury_L <- incid_l %>%
+  filter(Body.Part == 'Ankle') %>%
   distinct(anon_id) %>%
   pull(anon_id)
 ```
@@ -1388,7 +1389,7 @@ ggplot(performance_L_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 l['LB'] <- ifelse(l$anon_id %in% lb_injury_L, 'Yes', 'No')
 l['ACL'] <- ifelse(l$anon_id %in% acl_injury_L, 'Yes', 'No')
 l['HSI'] <- ifelse(l$anon_id %in% hsi_injury_L, 'Yes', 'No')
-l['Sport'] <- 'Lacrosse'
+l['Ankle'] <- ifelse(l$anon_id %in% ankle_injury_L, 'Yes', 'No')
 ```
 
 ```{r}
@@ -1425,20 +1426,19 @@ ggplot(data = HJ_L, aes(x = Mean.Flight.Time..ms., fill = Ankle)) +
 
 ```{r}
 #creating lists of athletes that suffered any lower body injuries, acl injury, HSI
-lb_injury_V <- incident_V %>%
-  filter(LB.Injury == 1) %>%
+lb_injury_V <- incid_v %>%
   distinct(anon_id) %>%
   pull(anon_id)
-acl_injury_V <- incident_V %>%
-  filter(ACL == 1) %>%
+acl_injury_V <- incid_v %>%
+  filter(OSICS14.Code == 'KLA') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-hsi_injury_V <- incident_V %>%
-  filter(HSI == 1) %>%
+hsi_injury_V <- incid_v %>%
+  filter(OSICS14.Code == 'TM1') %>%
   distinct(anon_id) %>%
   pull(anon_id)
-ankle_injury_V <- incident_V %>%
-  filter(Body.Part. == 'Ankle') %>%
+ankle_injury_V <- incid_v %>%
+  filter(Body.Part == 'Ankle') %>%
   distinct(anon_id) %>%
   pull(anon_id)
 ```
@@ -1465,7 +1465,7 @@ ggplot(performance_V_nordic, aes(x = Relative.Maximum.Nordic.Bilateral.Mean, y =
 v['LB'] <- ifelse(v$anon_id %in% lb_injury_V, 'Yes', 'No')
 v['ACL'] <- ifelse(v$anon_id %in% acl_injury_V, 'Yes', 'No')
 v['HSI'] <- ifelse(v$anon_id %in% hsi_injury_V, 'Yes', 'No')
-v['Sport'] <- 'Volleyball'
+v['Ankle'] <- ifelse(v$anon_id %in% ankle_injury_V, 'Yes', 'No')
 ```
 
 ```{r}
@@ -1512,7 +1512,10 @@ nordbord_cmj <- rbind(b, s, l, v) %>%
 
 #joining hj data
 nordbord_hj <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
-  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'))
+  mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
+         Best.Avg.Force.Asym = abs(Best.Average.Force..Asym...N.),
+         Best.Peak.Force.Asym = abs(Best.Peak.Force..Asym...N.),
+         Mean.Landing.Force.Asym = abs(Mean.Landing.RFD..Asym...N.s.))
 
 #joining imtp data
 nordbord_imtp <- rbind(IMTP_B, IMTP_S, IMTP_L, IMTP_V) %>%
@@ -1549,15 +1552,28 @@ summary(model_forward_step)
 When creating a forward stepwise model the model selects Nordic.MAX.Imbalance, trend, nordic right mean and max, athlete bodyweight and impulse. 
 
 ```{r}
-ggplot(data = nordbord_hj, aes(x = HJ.RSI, fill = Ankle)) + 
+ggplot(data = nordbord_hj, aes(x = Best.Time.to.Peak.Force..ms., fill = Ankle)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', 'black')) + 
   labs(title = 'Distribution of Hop Jump RSI vs Ankle Injury (All Time)',
        y = 'Density',
        x = 'Hop Jump RSI',
        fill = 'Ankle Injury') + 
-# facet_wrap(~Sport.2) +
-  scale_x_continuous(breaks = seq(0, 7, 0.2)) + 
+  facet_wrap(~Sport) +
+#  scale_x_continuous(breaks = seq(0, 7, 0.2)) + 
+  theme_bw()
+```
+
+```{r}
+ggplot(data = nordbord_cmj, aes(x = Peak.Power...BM..W.kg., fill = Ankle)) + 
+  geom_density(alpha = 0.5) + 
+  scale_fill_manual(values = c('#CFB87C', 'black')) + 
+  labs(title = 'Distribution of Hop Jump RSI vs Ankle Injury (All Time)',
+       y = 'Density',
+       x = 'Hop Jump RSI',
+       fill = 'Ankle Injury') + 
+  facet_wrap(~Sport) +
+#  scale_x_continuous(breaks = seq(0, 7, 0.2)) + 
   theme_bw()
 ```
 
@@ -3008,7 +3024,8 @@ The average abduction mean is significant for basketball and almost for lacrosse
 #creating a dataset containing performance data accross all sports
 cmj_all_injury <- rbind(merge_cmj_B, merge_cmj_S, merge_cmj_L, merge_cmj_V) %>%
   mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
-         Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'))
+         Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'),
+         Peak.Landing.Asym = abs(Peak.Landing.Force..Asym...N.))
 ```
 
 ```{r}
@@ -3085,7 +3102,7 @@ fisher.test(injury_matrix_v)
 ```
 
 ```{r}
-ggplot(data = cmj_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(RSI.Modified..m.s., fill = Was.Injured)) + 
+ggplot(data = cmj_all_injury, aes(Landing.Net.Peak.Force...BM..N.kg., fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   labs(title = 'DSI vs Lower Body Injury',
@@ -3093,8 +3110,27 @@ ggplot(data = cmj_all_injury %>% filter(Area %in% c('Ankle', 'None')), aes(RSI.M
        y = 'Density',
        fill = 'Lower Body Injury',
        caption = 'Field Sports') +
-  facet_wrap(~Sport.2) + 
+#  facet_wrap(~Sport) + 
   theme_bw()
+```
+
+```{r}
+library(MASS)
+
+train <- cmj_all_injury %>%
+  mutate(LB = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)),
+         AKL = as.factor(ifelse(Area == 'Ankle', 1, 0)),
+         KNEE = as.factor(ifelse(Area == 'Knee', 1, 0))) %>%
+  dplyr::select(-c(anon_id, Date, Injury, Area, Was.Injured, Sport, Sport.2, AKL, KNEE))
+
+model_null <- glm(LB ~ 1, data = train, family = 'binomial')
+model_step <- glm(LB ~ ., data = train, family = 'binomial')
+
+model_forward_step <- stepAIC(model_null, 
+                              scope = list(lower = model_null, upper = model_step), 
+                              direction = "forward")
+
+summary(model_forward_step)
 ```
 
 ```{r}
@@ -3189,24 +3225,33 @@ hj_all_injury <- rbind(merge_hj_B, merge_hj_S, merge_hj_L, merge_hj_V) %>%
   mutate(Sport.2 = ifelse(Sport == 'Basketball' | Sport == 'Volleyball', 'Court', 'Field'),
          Was.Injured = ifelse(Was.Injured == 'Yes', 'Yes', 'No'),
          Ankle = ifelse(Area == 'Ankle', 'Yes', 'No'),
-         Knee = ifelse(Area == 'Knee', 'Yes', 'No'))
+         Knee = ifelse(Area == 'Knee', 'Yes', 'No'),
+         Was.Injured. = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)),
+         HJ.RSI.FLAG = as.factor(ifelse(HJ.RSI < 1.05, 1, 0)),
+         Flight.Time.FLAG = as.factor(ifelse(Mean.Flight.Time..ms. < 0.4245, 1, 0)),
+         Contact.Time.FLAG = as.factor(ifelse(Mean.Contact.Time..ms. > 0.2085, 1, 0)),
+         Jump.Height.FLAG = as.factor(ifelse(Max.Jump.Height..cm. < 21.5725, 1, 0)))
 
 field_ankle <- hj_all_injury %>%
   filter(Sport.2 == 'Field' & Area %in% c('Ankle', 'None')) %>%
-  mutate(Was.Injured. = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)))
+  mutate(Was.Injured. = as.factor(ifelse(Was.Injured == 'Yes', 1, 0)),
+         HJ.RSI.FLAG = as.factor(ifelse(HJ.RSI < 1.05, 1, 0)),
+         Flight.Time.FLAG = as.factor(ifelse(Mean.Flight.Time..ms. < 0.4245, 1, 0)),
+         Contact.Time.FLAG = as.factor(ifelse(Mean.Contact.Time..ms. > 0.2085, 1, 0)),
+         Jump.Height.FLAG = as.factor(ifelse(Max.Jump.Height..cm. < 21.5725, 1, 0)))
 ```
 
 ```{r}
-ggplot(data = field_ankle, aes(Max.Jump.Height..cm., fill = Was.Injured)) + 
+ggplot(data = hj_all_injury, aes(Mean.Flight.Time..ms., fill = Was.Injured)) + 
   geom_density(alpha = 0.5) +
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
-  geom_vline(xintercept = 21.5725, color = 'red', linetype = 'dashed') +
-  labs(title = 'Max Jump Height vs Ankle Injury',
-       x = 'Max Jump Height (cm)',
+  geom_vline(xintercept = 0.4245, color = 'red', linetype = 'dashed') +
+  labs(title = 'Mean Flight Time vs Lower Body Injury',
+       x = 'Mean Flight Time (s)',
        y = 'Density',
-       fill = 'Ankle Injury',
-       caption = 'CU Womens Soccer and Lacrosse') +
-  scale_x_continuous(breaks = seq(0, 50, 4)) + 
+       fill = 'Lower Body Injury',
+       caption = 'CU Womens Athletes') +
+  scale_x_continuous(breaks = seq(0, 50, 0.04)) + 
   theme_bw()
 ```
 
@@ -3223,7 +3268,7 @@ print(roc_coords)
 ```
 
 ```{r}
-model <- glm(Was.Injured. ~ Mean.Contact.Time..ms., data = field_ankle, family = 'binomial')
+model <- glm(Was.Injured. ~ HJ.RSI.FLAG + Flight.Time.FLAG + Contact.Time.FLAG + Jump.Height.FLAG, data = hj_all_injury, family = 'binomial')
 
 summary(model)
 ```
@@ -3471,17 +3516,18 @@ hj <- rbind(HJ_B, HJ_S, HJ_L, HJ_V) %>%
 hj %>%
   group_by(Sport) %>%
   summarize(`RSI` = mean(HJ.RSI),
-            `Contact Time` = mean(Mean.Contact.Time..ms.))
+            `Contact Time` = mean(Mean.Contact.Time..ms.),
+            `Other RSI` = mean(Mean.RSI..Flight.Contact.Time.))
 ```
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(hj, aes(x = HJ.RSI, color = Sport, fill = Sport)) + 
+ggplot(hj, aes(x = Mean.RSI..Flight.Contact.Time., color = Sport, fill = Sport)) + 
   geom_density(alpha = 0.4) + 
   scale_fill_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
   scale_color_manual(values = c('#CFB87C', '#60D272', '#FF736F', '#565A5C')) +
-  labs(title = 'Distribution of Hop Jump RSI Across Sports',
-       x = 'Hop Jump RSI (m/s)',
+  labs(title = 'Distribution of Mean RSI (Hop Jump) Across Sports',
+       x = 'Mean RSI (m/s)',
        y = 'Density') +
   scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.2)) + 
   theme_bw()
@@ -3489,33 +3535,33 @@ ggplot(hj, aes(x = HJ.RSI, color = Sport, fill = Sport)) +
 
 ```{r}
 #creates a density plot for maximum force across sports
-ggplot(hj, aes(x = Mean.Contact.Time..ms., color = Sport.2, fill = Sport.2)) + 
+ggplot(hj, aes(x = Mean.RSI..Flight.Contact.Time., color = Sport.2, fill = Sport.2)) + 
   geom_density(alpha = 0.5) + 
   scale_fill_manual(values = c('#CFB87C', '#000000')) +
   scale_color_manual(values = c('#CFB87C', '#000000')) +
-  labs(title = 'Distribution of Mean Contact Time Across Sports',
-       x = 'Mean Contact Time (s)',
+  labs(title = 'Distribution of Mean RSI (Hop Jump) Across Sports',
+       x = 'Mean RSI (m/s)',
        y = 'Density',
        fill = 'Sport Type',
        color = 'Sport Type') +
-  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.04)) + 
+  scale_x_continuous(breaks = seq(from = 0, to = 7, by = 0.2)) + 
   theme_bw()
 ```
 
 ```{r}
-img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/hjcontact_wlx.png")
+img <- image_read("C:/Users/cazb4905/Documents/T2P2-data-analysis-2025/hjrsi_wlx.png")
 img_grob <- rasterGrob(img, interpolate = TRUE)
 img_plot <- ggdraw() + draw_grob(img_grob, x = 0, y = 0, width = 1, height = 1)
 
-p <- ggplot(HJ_L, aes(x = Mean.Contact.Time..ms.)) + 
+p <- ggplot(HJ_L, aes(x = Mean.RSI..Flight.Contact.Time.)) + 
   geom_density(fill = '#CFB87C') +
-  labs(title = 'Distribution of Mean Contact Time',
-       x = 'Mean Contact Time (s)',
+  labs(title = 'Distribution of Mean RSI (Flight Contact Time)',
+       x = 'Mean RSI (m/s)',
        y = 'Density',
        caption = 'CU Womens Lacrosse') +
-  geom_vline(xintercept = median(HJ_L$Mean.Contact.Time..ms.), linetype = 'solid') +
-  geom_vline(xintercept = c(quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
-  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.04)) + 
+  geom_vline(xintercept = median(HJ_L$Mean.RSI..Flight.Contact.Time.), linetype = 'solid') +
+  geom_vline(xintercept = c(quantile(HJ_L$Mean.RSI..Flight.Contact.Time., probs = c(0.01, 0.25, 0.75, 0.99))), linetype = 'dashed') + 
+  scale_x_continuous(breaks = seq(from = 0, to = 100, by = 0.2)) + 
   theme_bw()
 
 combined <- plot_grid(p, img_plot, 
@@ -3527,11 +3573,11 @@ combined
 ```
 
 ```{r}
-quantile(HJ_L$Mean.Contact.Time..ms., probs = c(0.25, 0.5, 0.75))
+quantile(HJ_L$Mean.RSI..Flight.Contact.Time., probs = c(0.25, 0.5, 0.75))
 ```
 
 ```{r}
-t.test(Mean.Contact.Time..ms. ~ Sport, data = hj %>% filter(Sport %in% c('Lacrosse', 'Volleyball')))
+t.test(Mean.RSI..Flight.Contact.Time. ~ Sport, data = hj %>% filter(Sport %in% c('Soccer', 'Volleyball')))
 ```
 
 ## Performance Dataset
