@@ -2,6 +2,8 @@
 title: "sydneys_markdown"
 output: html_document
 date: "2025-07-14"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r}
@@ -1211,6 +1213,18 @@ odds.ratio=exp(-0.24924)
 ```
 Above threshold having a negative estimate and being significant , means that being above the 5x threshold is associated with a reduction in injury odds. Therefore being above the threshold does relate to lower body risk.
 ```{r}
+# density plot 
+ggplot(all_nordic_incident, aes(x = strength_ratio, fill = LB.Injury)) +
+  geom_density(alpha = 0.8, fill = '#CFB87C') +
+  geom_vline(xintercept = 5, linetype = "dashed", color = "red", size = 1) +
+  annotate("text", x = 5.1, y = 0.6, label = "Threshold = 5x Bodyweight", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Hamstring Strength Ratio",
+       x = "Hamstring Strength Ratio",
+       y = "Density") +
+  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
+                    name = "Lower Body Injury", labels = c("No", "Yes")) #+
+  #scale_x_continuous(limits = c(0,3))
+
 #STACKED BAR CHART
 injury_counts <- all_nordic_incident %>%
   mutate(
@@ -1224,7 +1238,7 @@ ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
   scale_fill_manual(values=c("Injured"='#CFB87C',"Not Injured"='#000000'))+
   labs(
     title = "Lower Body Injury Count by Hamstring Strength Threshold",
-    x = "Hamstring Strength",
+    x = "Hamstring Strength Threshold",
     y = "Count",
     fill = "Lower Body Injury Status"
   ) +
@@ -1247,9 +1261,9 @@ ggplot(injury_props, aes(x = Threshold, y = prop, fill = Injury)) +
   scale_y_continuous(labels = scales::percent_format()) +
   labs(
     title = "Proportion of Athletes with a Lower Body Injury vs No Injury by Threshold",
-    x = "Hamstring Strength",
+    x = "Hamstring Strength Threshold",
     y = "Proportion",
-    fill = "Lower BodyI njury Status"
+    fill = "Lower Body Injury Status"
   ) +
   theme_minimal()
 ```
@@ -1328,16 +1342,16 @@ odds.ratio=exp(-0.59674)
 (1-odds.ratio)*100
 
 #GRAPHICS
-#density plot
+# density plot 
 ggplot(all_hip_incident, aes(x = Bilateral.Hip.Abduction.Adduction.Ratio, fill = LB.Injury)) +
-  geom_density(alpha = 0.4) +
+  geom_density(alpha = 0.8, fill = '#CFB87C') +
   geom_vline(xintercept = 1.024, linetype = "dashed", color = "red", size = 1) +
-  labs(title = "Density Plot: Bilateral Hip Abduction-Adduction Ratio by Injury Status",
+  annotate("text", x = 1.1, y = 2.1, label = "Threshold = 1.024", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Bilateral Hip Abduction-Adduction Ratio",
        x = "Bilateral Hip Abduction-Adduction Ratio",
        y = "Density") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) +
-  scale_x_continuous(limits =c(0,3))
+  scale_x_continuous(limits = c(0,3))
+
 #boxplot
 ggplot(all_hip_incident, aes(x = LB.Injury, y = Bilateral.Hip.Abduction.Adduction.Ratio, fill = LB.Injury)) +
   geom_boxplot(alpha = 0.7) +
@@ -1348,7 +1362,7 @@ ggplot(all_hip_incident, aes(x = LB.Injury, y = Bilateral.Hip.Abduction.Adductio
                     name = "LB Injury", labels = c("No", "Yes")) +
   scale_y_continuous(limits =c(0,3))
 
-#another count distribution
+#count distribution
 injury_counts <- all_hip_incident %>%
   mutate(
     Threshold = ifelse(above_threshold == 1, "Above", "Below"),
@@ -1381,8 +1395,8 @@ ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = fact
   scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
-```{r}
 #variable IMPULSE
+```{r}
 library(cutpointr)
 all_hip_incident$LB.Injury <- as.factor(all_hip_incident$LB.Injury)
 
@@ -1427,23 +1441,13 @@ odds.ratio=exp(-0.6211)
 #GRAPHICS
 #density plot
 ggplot(all_hip_incident, aes(x = Impulse, fill = LB.Injury)) +
-  geom_density(alpha = 0.4) +
+  geom_density(alpha = 0.8, fill = '#CFB87C') +
   geom_vline(xintercept = 973.1775, linetype = "dashed", color = "red", size = 1) +
-  labs(title = "Density Plot: Impulse by Injury Status",
-       x = "Impulse",
-       y = "Density") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) #+
+  annotate("text", x = 0, y = .0004, label = "Threshold=973.1775", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Impulse",
+       x = "Impulse (N/s)",
+       y = "Density") #+
   #scale_x_continuous(limits =c(0,3))
-#boxplot
-ggplot(all_hip_incident, aes(x = LB.Injury, y = Impulse, fill = LB.Injury)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_hline(yintercept = 973.1775, linetype = "dashed", color = "red") +
-  labs(title = "Boxplot: Impulse by Injury Status",
-       x = "Lower Body Injury", y = "Impulse") +
-  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
-                    name = "LB Injury", labels = c("No", "Yes"))# +
-  #scale_y_continuous(limits =c(0,3))
 
 #count distribution
 injury_counts <- all_hip_incident %>%
@@ -1462,20 +1466,6 @@ ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
     fill = "Lower Body Injury"
   ) +
   theme_minimal()
-
-#proportions distribution
-threshold_summary <- all_hip_incident %>%
-  group_by(above_threshold, LB.Injury) %>%
-  summarise(count = n()) %>%
-  mutate(prop = count / sum(count))
-
-ggplot(threshold_summary, aes(x = factor(above_threshold), y = prop, fill = factor(LB.Injury))) +
-  geom_bar(stat = "identity", position = "fill") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) +
-  labs(x = "Impulse Threshold", y = "Proportion",
-       title = "Lower Body Injury Proportions Above vs Below the Impulse Threshold") +
-  scale_x_discrete(labels = c("0" = "Below", "1" = "Above"))
 ```
 
 #Hip.Abduction
@@ -1523,23 +1513,13 @@ exp(0.3950)
 #GRAPHICS
 #density plot
 ggplot(all_hip_incident, aes(x = Hip.Abduction.MEAN.Imbalance, fill = LB.Injury)) +
-  geom_density(alpha = 0.4) +
+  geom_density(alpha = 0.8, fill = '#CFB87C') +
   geom_vline(xintercept = 1.4, linetype = "dashed", color = "red", size = 1) +
-  labs(title = "Density Plot: Hip Abduction Mean Imbalance by Injury Status",
+   annotate("text", x = 1.6, y = 0.14, label = "Threshold = 1.4", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Hip Abduction Mean Imbalance",
        x = "Hip Abduction Mean Imbalance",
        y = "Density") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) +
   scale_x_continuous(limits =c(0,30))
-#boxplot
-ggplot(all_hip_incident, aes(x = LB.Injury, y = Hip.Abduction.MEAN.Imbalance, fill = LB.Injury)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_hline(yintercept = 1.4, linetype = "dashed", color = "red") +
-  labs(title = "Boxplot: Hip Abduction Mean Imbalance by Injury Status",
-       x = "Lower Body Injury", y = "Hip Abduction Mean Imbalance") +
-  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
-                    name = "LB Injury", labels = c("No", "Yes"))# +
-  #scale_y_continuous(limits =c(0,3))
 
 #count distribution
 injury_counts <- all_hip_incident %>%
@@ -1619,23 +1599,13 @@ exp(0.33115)
 #GRAPHICS
 #density plot
 ggplot(all_hip_incident, aes(x = Hip.Adduction.MEAN.Imbalance, fill = LB.Injury)) +
-  geom_density(alpha = 0.4) +
+  geom_density(alpha = 0.8, fill = '#CFB87C') +
   geom_vline(xintercept = 4.5, linetype = "dashed", color = "red", size = 1) +
-  labs(title = "Density Plot: Hip Adduction Mean Imbalance by Injury Status",
+   annotate("text", x = 4.65, y = 0.13, label = "Threshold = 4.5", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Hip Adduction Mean Imbalance",
        x = "Hip Adduction Mean Imbalance",
        y = "Density") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) +
   scale_x_continuous(limits =c(0,35))
-#boxplot
-ggplot(all_hip_incident, aes(x = LB.Injury, y = Hip.Adduction.MEAN.Imbalance, fill = LB.Injury)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_hline(yintercept = 4.5, linetype = "dashed", color = "red") +
-  labs(title = "Boxplot: Hip Adduction Mean Imbalance by Injury Status",
-       x = "Lower Body Injury", y = "Hip Adduction Mean Imbalance") +
-  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
-                    name = "LB Injury", labels = c("No", "Yes"))# +
-  #scale_y_continuous(limits =c(0,3))
 
 #count distribution
 injury_counts <- all_hip_incident %>%
@@ -1716,23 +1686,13 @@ odds.ratio=exp(-0.18789)
 #GRAPHICS
 #density plot
 ggplot(all_nordic_incident, aes(x = Maximum.Nordic.Bilateral.Mean, fill = LB.Injury)) +
-  geom_density(alpha = 0.4) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
   geom_vline(xintercept = 301.46, linetype = "dashed", color = "red", size = 1) +
-  labs(title = "Density Plot: Maximum Nordic Bilateral Mean by Injury Status",
-       x = "Maximum Nordic Bilateral Mean",
-       y = "Density") +
-  scale_fill_manual(values = c("0" = "#000000", "1" = "#CFB87C"),
-                    name = "Lower Body Injury", labels = c("No", "Yes")) #+
+    annotate("text", x = 304, y = 0.008, label = "Threshold = 301.46", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum Nordic Bilateral Mean",
+       x = "Maximum Nordic Bilateral Mean (N)",
+       y = "Density") #+
   #scale_x_continuous(limits =c(0,35))
-#boxplot
-ggplot(all_nordic_incident, aes(x = LB.Injury, y = Maximum.Nordic.Bilateral.Mean, fill = LB.Injury)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_hline(yintercept = 301.46, linetype = "dashed", color = "red") +
-  labs(title = "Boxplot: Maximum Nordic Bilateral Mean by Injury Status",
-       x = "Lower Body Injury", y = "Maximum Nordic Bilateral Mean") +
-  scale_fill_manual(values = c("0" = "#000000", "1" ="#CFB87C"),
-                    name = "LB Injury", labels = c("No", "Yes"))# +
-  #scale_y_continuous(limits =c(0,3))
 
 #count distribution
 injury_counts <- all_nordic_incident %>%
@@ -1806,8 +1766,37 @@ model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomi
 summary(model)
 odds.ratio=exp(-0.48044)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_nordic_incident, aes(x = Impulse, fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 5939.035, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 5945, y = 0.00022, label = "Threshold = 5939.035", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Impulse",
+       x = "Impulse (N/s)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,35))
+
+#count distribution
+injury_counts <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Impulse Threshold",
+    x = "Impulse Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
 ```
 
+4.MAX nordic imbalance
 ```{r}
 library(cutpointr)
 all_nordic_incident$LB.Injury <- as.factor(all_nordic_incident$LB.Injury)
@@ -1845,6 +1834,34 @@ all_nordic_incident <-  all_nordic_incident %>%
 #Does being above the threshold relate to lower body injury risk?
 model <- glm(LB.Injury~ above_threshold,data=all_nordic_incident, family="binomial")
 summary(model)
+
+#density plot
+ggplot(all_nordic_incident, aes(x = Nordic.MAX.Imbalance, fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 10.7, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 12, y = 0.075, label = "Threshold = 10.7", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum Nordic Imbalance",
+       x = "Maximum Nordic Imbalance",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,35))
+
+#count distribution
+injury_counts <- all_nordic_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum Nordic Imbalance Threshold",
+    x = "Maximum Nordic Imbalance Threshold",
+    y = "Count",
+    fill = "Lower Body Injury"
+  ) +
+  theme_minimal()
 ```
 
 
@@ -1895,6 +1912,33 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
 exp(0.19171)
+
+#density plot
+ggplot(all_CMJ_incident, aes(x = Relative.Concentric.Power.Bilateral, fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 10.3, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 11, y = 0.42, label = "Threshold = 10.3", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Relative Bilateral Concentric Power ",
+       x = " Relative Bilateral Concentric Power (W/kg)",
+       y = "Density") +
+  scale_x_continuous(limits =c(0,18))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the  Relative Bilateral Concentric Power Threshold",
+    x = " Relative Bilateral Concentric Power Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 2. Eccentric.Concentric.Mean.Force.Ratio
@@ -1941,6 +1985,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial"
 summary(model)
 odds.ratio=exp(-0.7758)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_CMJ_incident, aes(x = Eccentric.Concentric.Mean.Force.Ratio, fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 47.7145, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 48, y = 0.1, label = "Threshold = 47.7145", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Average Eccentric Concentric Force Ratio ",
+       x = "Average Eccentric Concentric Force Ratio",
+       y = "Density") +
+  scale_x_continuous(limits =c(0,70))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Average Eccentric Concentric Force Ratio Threshold",
+    x = "Average Eccentric Concentric Force Ratio Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 3. Maximum Jump Height
@@ -1986,6 +2057,33 @@ all_CMJ_incident <-  all_CMJ_incident %>%
 model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial")
 summary(model)
 exp(0.97996)
+
+#density plot
+ggplot(all_CMJ_incident, aes(x = Max.Jump.Height..cm., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 41.379, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 30.5, y = 0.08, label = "Threshold = 41.379", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum Jump Height",
+       x = "Maximum Jump Height (cm)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,70))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum Jump Height Threshold",
+    x = "Maximum Jump Height Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 4. Maximum Concentric RFD
@@ -2032,6 +2130,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial"
 summary(model)
 odds.ratio=exp(-0.40481)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_CMJ_incident, aes(x = Max.Concentric.RPD..N.s., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 15784.34, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 1580, y = 0.05, label = "Threshold = 15784.34", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum Concentric RPD",
+       x = "Maximum Concentric RPD (N/s)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,70))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum Concentric RPD Threshold",
+    x = "Maximum Concentric RPD Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 5. Eccentric Mean Braking Force
@@ -2078,6 +2203,33 @@ model <- glm(LB.Injury~ above_threshold,data=all_CMJ_incident, family="binomial"
 summary(model)
 odds.ratio=exp(-0.74619)
 (1-odds.ratio)*100
+
+#density plot
+ggplot(all_CMJ_incident, aes(x = Eccentric.Mean.Braking.Force..N., fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 783.517, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 325, y = 0.0035, label = "Threshold = 783.517", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Average Eccentric Braking Force",
+       x = "Average Eccentric Braking Force (N)",
+       y = "Density") +
+  scale_x_continuous(limits =c(0,1350))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Average Eccentric Braking Force Threshold",
+    x = "Average Eccentric Braking Force Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 6. Maximum VALD RSI
@@ -2125,6 +2277,32 @@ summary(model)
 odds.ratio=exp(-0.26597)
 (1-odds.ratio)*100
 
+#density plot
+ggplot(all_CMJ_incident, aes(x = Max.RSI.Modified.VALD, fill = LB.Injury)) +
+  geom_density(alpha = 0.8,fill = '#CFB87C') +
+  geom_vline(xintercept = 0.3995, linetype = "dashed", color = "red", size = 1) +
+    annotate("text", x = 0.47, y = 3.2, label = "Threshold = 0.3995", color = "#000000", hjust = 0) +
+  labs(title = "Density Plot: Maximum RSI Modified VALD",
+       x = "Maximum RSI Modified VALD (m/s)",
+       y = "Density") #+
+  #scale_x_continuous(limits =c(0,1350))
+
+#count distribution
+injury_counts <- all_CMJ_incident %>%
+  mutate(
+    Threshold = ifelse(above_threshold == 1, "Above", "Below"),
+    Injury = ifelse(LB.Injury == 1, "Yes", "No")
+  ) %>%
+  count(Threshold, Injury)
+ggplot(injury_counts, aes(x = Threshold, y = n, fill = Injury)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_fill_manual(values=c("Yes"='#CFB87C',"No"='#000000'))+
+  labs(
+    title = "Lower Body Injury Count Above vs Below the Maximum RSI Modified VALD Threshold",
+    x = "Maximum RSI Modified VALD Threshold",
+    y = "Count",
+    fill = "Lower Body Injury") +
+  theme_minimal()
 ```
 
 
